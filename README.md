@@ -9,3 +9,4 @@ VEX PROS 项目，含底盘 PID（直线/转向）与积分项。
   - **macOS**：若直接 `make` 报错 `cannot find -lstdc++`，请先安装完整工具链并把 PROS 工具链置于 PATH 前，或使用 `pros make`。
   - **Windows**：在 [MSYS2](https://www.msys2.org/) 中安装 `arm-none-eabi-gcc`，在 MSYS2 终端里执行 `make`。
   - **Linux**：安装 `arm-none-eabi-gcc` 后执行 `make`。
+
