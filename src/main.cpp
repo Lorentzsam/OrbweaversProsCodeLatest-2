@@ -2,6 +2,7 @@
 #include "liblvgl/llemu.h"
 #include <cmath>
 #include <algorithm>
+#include <cstdio>
 
 // -------------------------------
 // CONTROLLER
@@ -75,11 +76,11 @@ const double DIST_PER_DEG =
 
 // >>> YOU TUNE THESE <<<
 double DRIVE_kP = 6.0;
-double DRIVE_kI = 0.0;   // 积分，从小值试起（如 0.01）
+double DRIVE_kI = 0.0;  
 double DRIVE_kD = 0.4;
 
 double TURN_kP = 2.2;
-double TURN_kI = 0.0;    // 积分，从小值试起（如 0.02）
+double TURN_kI = 0.0;  
 double TURN_kD = 0.15;
 
 // 积分限幅，防止积分饱和
@@ -228,6 +229,8 @@ void opcontrol() {
     pros::lcd::set_text(0, "CONTROLLER CONNECTED");
 
     while (true) {
+        updateOdometry();
+        double traveledIn = forwardOdom.get_position() * DIST_PER_DEG;
 
         if (!master.is_connected()) {
             left_motors.move(0);
@@ -333,6 +336,13 @@ void opcontrol() {
                     motorArm.move(0);
                 break;
         }
+
+        // -------------------------------
+        // LCD 测试显示：航向、已走距离、坐标、追踪轮
+        // -------------------------------
+        pros::lcd::print(0, "H:%.1f deg  in:%.1f", robotHeadingDeg, traveledIn);
+        pros::lcd::print(1, "X:%.1f  Y:%.1f", robotX, robotY);
+        pros::lcd::print(2, "odom deg:%.0f", forwardOdom.get_position());
 
         pros::delay(20);
     }
