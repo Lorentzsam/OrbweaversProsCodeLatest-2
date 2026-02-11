@@ -141,11 +141,13 @@ void driveDistance(double inches) {
         prevError = error;
 
         integral += error;
-        integral = std::clamp(integral, -DRIVE_INTEGRAL_CAP, DRIVE_INTEGRAL_CAP);
+        if (integral > DRIVE_INTEGRAL_CAP) integral = DRIVE_INTEGRAL_CAP;
+        else if (integral < -DRIVE_INTEGRAL_CAP) integral = -DRIVE_INTEGRAL_CAP;
 
         double power =
             DRIVE_kP * error + DRIVE_kI * integral + DRIVE_kD * derivative;
-        power = std::clamp(power, -100.0, 100.0);
+        if (power > 100.0) power = 100.0;
+        else if (power < -100.0) power = -100.0;
 
         double headingError = imu.get_rotation();
         double turn = headingError * 1.2; // >>> YOU TUNE <<<
@@ -175,11 +177,13 @@ void turnToAngle(double targetDeg) {
         prevError = error;
 
         integral += error;
-        integral = std::clamp(integral, -TURN_INTEGRAL_CAP, TURN_INTEGRAL_CAP);
+        if (integral > TURN_INTEGRAL_CAP) integral = TURN_INTEGRAL_CAP;
+        else if (integral < -TURN_INTEGRAL_CAP) integral = -TURN_INTEGRAL_CAP;
 
         double power =
             TURN_kP * error + TURN_kI * integral + TURN_kD * derivative;
-        power = std::clamp(power, -90.0, 90.0);
+        if (power > 90.0) power = 90.0;
+        else if (power < -90.0) power = -90.0;
 
         left_motors.move(-power);
         right_motors.move(power);
