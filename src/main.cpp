@@ -111,6 +111,11 @@ void initialize() {
     robotX = robotY = 0.0;
 
     pros::lcd::set_text(0, "READY");
+    // Brain 大屏：确认显示正常，自动阶段会画 Error 曲线
+    pros::screen::set_eraser(pros::Color::black);
+    pros::screen::erase();
+    pros::screen::set_pen(pros::Color::white);
+    pros::screen::print(pros::E_TEXT_MEDIUM, 2, "Run Autonomous for PID curve");
 }
 
 // -------------------------------
@@ -140,7 +145,8 @@ void driveDistance(double inches) {
     double prevError = inches;
     double integral = 0.0;
 
-    // Error 曲线：清屏、画零线（目标），波形收敛即 PID 良好
+    // Error 曲线：清屏（黑底）、画零线（目标），波形收敛即 PID 良好
+    pros::screen::set_eraser(pros::Color::black);
     pros::screen::erase();
     pros::screen::set_pen(pros::Color::gray);
     pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
@@ -199,7 +205,8 @@ void turnToAngle(double targetDeg) {
     double prevError = targetDeg;
     double integral = 0.0;
 
-    // Error 曲线：清屏、零线 + 波形
+    // Error 曲线：清屏（黑底）、零线 + 波形
+    pros::screen::set_eraser(pros::Color::black);
     pros::screen::erase();
     pros::screen::set_pen(pros::Color::gray);
     pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
@@ -386,11 +393,15 @@ void opcontrol() {
         }
 
         // -------------------------------
-        // LCD 测试显示：航向、已走距离、坐标、追踪轮
+        // LCD + Brain 大屏：航向、已走距离、坐标、追踪轮
         // -------------------------------
         pros::lcd::print(0, "H:%.1f deg  in:%.1f", robotHeadingDeg, traveledIn);
         pros::lcd::print(1, "X:%.1f  Y:%.1f", robotX, robotY);
         pros::lcd::print(2, "odom deg:%d", (int)forwardOdom.get_position());
+        pros::screen::set_pen(pros::Color::white);
+        pros::screen::print(pros::E_TEXT_MEDIUM, 1, "H:%.1f  in:%.1f", robotHeadingDeg, traveledIn);
+        pros::screen::print(pros::E_TEXT_MEDIUM, 2, "X:%.1f  Y:%.1f", robotX, robotY);
+        pros::screen::print(pros::E_TEXT_MEDIUM, 3, "odom:%d", (int)forwardOdom.get_position());
 
         pros::delay(20);
     }
