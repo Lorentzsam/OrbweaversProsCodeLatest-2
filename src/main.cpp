@@ -253,7 +253,7 @@ void opcontrol() {
             master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         left_motors.move(-leftPower);
-        right_motors.move(rightPower * 0.8);
+        right_motors.move(rightPower);
 
         // -------------------------------
         // INTAKE
