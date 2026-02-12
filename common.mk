@@ -55,28 +55,6 @@ SIZETOOL:=$(ARCHTUPLE)size
 READELF:=$(ARCHTUPLE)readelf
 STRIP:=$(ARCHTUPLE)strip
 
-# Ensure linker finds libstdc++ (Mac: Homebrew binutils vs gcc split; Windows: MinGW)
-# 1) From compiler's -print-file-name (full path)
-# 2) Fallbacks: PROS toolchain, Homebrew arm-none-eabi-gcc, MSYS2
-GCC_LIB_FILE := $(shell $(CXX) -print-file-name=libstdc++.a 2>/dev/null)
-GCC_LIB_DIR :=
-ifneq (,$(GCC_LIB_FILE))
-ifneq (,$(filter-out libstdc++.a,$(notdir $(GCC_LIB_FILE))))
-GCC_LIB_DIR := $(patsubst %/,%,$(dir $(GCC_LIB_FILE)))
-endif
-endif
-ifneq (,$(GCC_LIB_DIR))
-LDFLAGS += -L$(GCC_LIB_DIR)
-else
-# Fallback: common toolchain lib paths (Linux, Windows MSYS2; Mac: use PROS toolchain or pros make)
-GCC_LIB_FALLBACK := $(wildcard /opt/homebrew/opt/arm-none-eabi-gcc/lib/gcc/arm-none-eabi/*) \
-  $(wildcard /usr/local/arm-none-eabi/lib/gcc/arm-none-eabi/*) \
-  $(wildcard /usr/lib/gcc/arm-none-eabi/*)
-ifneq (,$(GCC_LIB_FALLBACK))
-LDFLAGS += -L$(firstword $(GCC_LIB_FALLBACK))
-endif
-endif
-
 ifneq (, $(shell command -v gnumfmt 2> /dev/null))
 	SIZES_NUMFMT:=| gnumfmt --field=-4 --header $(NUMFMTFLAGS)
 else

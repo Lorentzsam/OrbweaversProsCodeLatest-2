@@ -1,29 +1,15 @@
 {
   "configurations": [
     {
-      "name": "Mac",
+      "name": "PROS Project",
       "includePath": [
-        "${workspaceFolder}/include",
         "${workspaceFolder}/**",
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX15.0.sdk/usr/include/c++/v1",
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1",
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX15.0.sdk/usr/include",
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
-        "/Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include",
-        "/usr/local/include",
         "c:\\Users\\admin\\Desktop\\newcode\\OrbweaversProsCodeLatest-2-1\\include"
       ],
       "defines": [
-        "_POSIX_THREADS",
-        "_UNIX98_THREAD_MUTEX_ATTRIBUTES",
-        "_POSIX_TIMERS",
-        "_POSIX_MONOTONIC_CLOCK",
-        "_PROS_INCLUDE_LIBLVGL_LLEMU_H",
-        "_PROS_INCLUDE_LIBLVGL_LLEMU_HPP"
-      ],
-      "macFrameworkPath": [
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX15.0.sdk/System/Library/Frameworks",
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
       ],
       "compilerPath": "c:\\Users\\admin\\AppData\\Roaming\\Code\\User\\globalStorage\\sigbots.pros\\install\\pros-toolchain-windows\\usr\\bin\\arm-none-eabi-g++",
       "cStandard": "gnu11",
@@ -36,28 +22,6 @@
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
       }
-    },
-    {
-      "name": "Win32",
-      "includePath": [
-        "${workspaceFolder}/include",
-        "${workspaceFolder}/**",
-        "C:/msys64/mingw64/include/c++/*",
-        "C:/msys64/mingw64/arm-none-eabi/include",
-        "C:/msys64/usr/include"
-      ],
-      "defines": [
-        "_POSIX_THREADS",
-        "_UNIX98_THREAD_MUTEX_ATTRIBUTES",
-        "_POSIX_TIMERS",
-        "_POSIX_MONOTONIC_CLOCK",
-        "_PROS_INCLUDE_LIBLVGL_LLEMU_H",
-        "_PROS_INCLUDE_LIBLVGL_LLEMU_HPP"
-      ],
-      "compilerPath": "C:/msys64/mingw64/bin/arm-none-eabi-g++.exe",
-      "cStandard": "c17",
-      "cppStandard": "c++17",
-      "intelliSenseMode": "windows-gcc-x64"
     }
   ],
   "version": 4
