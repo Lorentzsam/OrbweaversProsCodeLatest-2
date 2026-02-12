@@ -70,6 +70,9 @@ const double TRACK_WHEEL_DIAMETER_IN = 2.75;
 const double DIST_PER_DEG =
     (TRACK_WHEEL_DIAMETER_IN * PI) / 360.0;
 
+// PROS Rotation 返回 centidegrees（1/100 度），需转换为度
+const double CENTIDEG_TO_DEG = 1.0 / 100.0;
+
 // -------------------------------
 // PID CONSTANTS (START VALUES)
 // -------------------------------
@@ -111,7 +114,7 @@ void initialize() {
 void updateOdometry() {
     static double prevDeg = 0.0;
 
-    double currDeg = forwardOdom.get_position();
+    double currDeg = forwardOdom.get_position() * CENTIDEG_TO_DEG;
     double dDeg = currDeg - prevDeg;
     prevDeg = currDeg;
 
@@ -136,7 +139,7 @@ void driveDistance(double inches) {
         updateOdometry();
 
         double traveled =
-            forwardOdom.get_position() * DIST_PER_DEG;
+            forwardOdom.get_position() * CENTIDEG_TO_DEG * DIST_PER_DEG;
         double error = inches - traveled;
         double derivative = error - prevError;
         prevError = error;
@@ -240,7 +243,7 @@ void opcontrol() {
 
     while (true) {
         updateOdometry();
-        double traveledIn = forwardOdom.get_position() * DIST_PER_DEG;
+        double traveledIn = forwardOdom.get_position() * CENTIDEG_TO_DEG * DIST_PER_DEG;
 
         if (!master.is_connected()) {
             left_motors.move(0);
@@ -352,7 +355,7 @@ void opcontrol() {
         // -------------------------------
         pros::lcd::print(0, "H:%d deg in:%d", (int)robotHeadingDeg, (int)traveledIn);
         pros::lcd::print(1, "X:%d Y:%d", (int)robotX, (int)robotY);
-        pros::lcd::print(2, "odom deg:%d", (int)forwardOdom.get_position());
+        pros::lcd::print(2, "odom deg:%d", (int)(forwardOdom.get_position() * CENTIDEG_TO_DEG));
 
         pros::delay(20);
     }
