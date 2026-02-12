@@ -1,6 +1,5 @@
 #include "main.h"
 #include "liblvgl/llemu.h"
-#include "pros/screen.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cstdio>
@@ -88,13 +87,6 @@ double TURN_kD = 0.15;
 const double DRIVE_INTEGRAL_CAP = 30.0;
 const double TURN_INTEGRAL_CAP = 15.0;
 
-// Error 曲线图：V5 屏幕 480x240，水平零线在中心，error 映射为 Y 偏移
-const int SCREEN_W = 480;
-const int SCREEN_H = 240;
-const int GRAPH_CENTER_Y = 120;
-const double DRIVE_ERROR_SCALE = 5.0;   // 像素/英寸
-const double TURN_ERROR_SCALE = 2.0;   // 像素/度
-
 // -------------------------------
 // INITIALIZE
 // -------------------------------
@@ -111,11 +103,6 @@ void initialize() {
     robotX = robotY = 0.0;
 
     pros::lcd::set_text(0, "READY");
-    // Brain 大屏：确认显示正常，自动阶段会画 Error 曲线
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase();
-    pros::screen::set_pen(pros::Color::white);
-    pros::screen::print(pros::E_TEXT_MEDIUM, 2, "Run Autonomous for PID curve");
 }
 
 // -------------------------------
@@ -145,15 +132,6 @@ void driveDistance(double inches) {
     double prevError = inches;
     double integral = 0.0;
 
-    // Error 曲线：清屏（黑底）、画零线（目标），波形收敛即 PID 良好
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase();
-    pros::screen::set_pen(pros::Color::gray);
-    pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
-    pros::screen::set_pen(pros::Color::green);
-    int prevX = -1, prevY = GRAPH_CENTER_Y;
-    int iter = 0;
-
     while (true) {
         updateOdometry();
 
@@ -178,17 +156,9 @@ void driveDistance(double inches) {
         left_motors.move(power - turn);
         right_motors.move(power + turn);
 
-        // 将 error 映射为屏幕 Y：零线在上方，正 error 向下
-        int x = iter % SCREEN_W;
-        int y = GRAPH_CENTER_Y + (int)(error * DRIVE_ERROR_SCALE);
-        y = std::clamp(y, 0, SCREEN_H - 1);
-        if (prevX >= 0)
-            pros::screen::draw_line(prevX, prevY, x, y);
-        else
-            pros::screen::draw_pixel(x, y);
-        prevX = x;
-        prevY = y;
-        iter++;
+        // 用 3 行 LCD 显示 error 调试（不碰 Brain 大屏，避免参数面板闪烁）
+        pros::lcd::print(0, "Drv E:%.1f in:%.1f", error, traveled);
+        pros::lcd::print(1, "Pwr:%.0f", power);
 
         if (fabs(error) < 0.5) break;
         pros::delay(20);
@@ -196,6 +166,7 @@ void driveDistance(double inches) {
 
     left_motors.move(0);
     right_motors.move(0);
+    pros::lcd::set_text(0, "Drv OK");
 }
 
 // -------------------------------
@@ -204,15 +175,6 @@ void driveDistance(double inches) {
 void turnToAngle(double targetDeg) {
     double prevError = targetDeg;
     double integral = 0.0;
-
-    // Error 曲线：清屏（黑底）、零线 + 波形
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase();
-    pros::screen::set_pen(pros::Color::gray);
-    pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
-    pros::screen::set_pen(pros::Color::blue);
-    int prevX = -1, prevY = GRAPH_CENTER_Y;
-    int iter = 0;
 
     while (true) {
         double curr = imu.get_rotation();
@@ -232,17 +194,9 @@ void turnToAngle(double targetDeg) {
         left_motors.move(-power);
         right_motors.move(power);
 
-        // error 映射为 Y（度 -> 像素）
-        int x = iter % SCREEN_W;
-        int y = GRAPH_CENTER_Y + (int)(error * TURN_ERROR_SCALE);
-        y = std::clamp(y, 0, SCREEN_H - 1);
-        if (prevX >= 0)
-            pros::screen::draw_line(prevX, prevY, x, y);
-        else
-            pros::screen::draw_pixel(x, y);
-        prevX = x;
-        prevY = y;
-        iter++;
+        // LCD 显示 error 调试（不碰 Brain 大屏）
+        pros::lcd::print(0, "Turn E:%.1f deg", error);
+        pros::lcd::print(1, "cur:%.0f Pwr:%.0f", curr, power);
 
         if (fabs(error) < 1.0) break;
         pros::delay(20);
@@ -250,6 +204,7 @@ void turnToAngle(double targetDeg) {
 
     left_motors.move(0);
     right_motors.move(0);
+    pros::lcd::set_text(0, "Turn OK");
 }
 
 // -------------------------------
@@ -393,15 +348,11 @@ void opcontrol() {
         }
 
         // -------------------------------
-        // LCD + Brain 大屏：航向、已走距离、坐标、追踪轮
+        // 仅用 3 行 LCD 显示（不碰 Brain 大屏，避免参数面板闪烁）
         // -------------------------------
         pros::lcd::print(0, "H:%.1f deg  in:%.1f", robotHeadingDeg, traveledIn);
         pros::lcd::print(1, "X:%.1f  Y:%.1f", robotX, robotY);
         pros::lcd::print(2, "odom deg:%d", (int)forwardOdom.get_position());
-        pros::screen::set_pen(pros::Color::white);
-        pros::screen::print(pros::E_TEXT_MEDIUM, 1, "H:%.1f  in:%.1f", robotHeadingDeg, traveledIn);
-        pros::screen::print(pros::E_TEXT_MEDIUM, 2, "X:%.1f  Y:%.1f", robotX, robotY);
-        pros::screen::print(pros::E_TEXT_MEDIUM, 3, "odom:%d", (int)forwardOdom.get_position());
 
         pros::delay(20);
     }
