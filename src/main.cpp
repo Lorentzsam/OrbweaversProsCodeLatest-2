@@ -156,9 +156,9 @@ void driveDistance(double inches) {
         left_motors.move(power - turn);
         right_motors.move(power + turn);
 
-        // 用 3 行 LCD 显示 error 调试（不碰 Brain 大屏，避免参数面板闪烁）
-        pros::lcd::print(0, "Drv E:%.1f in:%.1f", error, traveled);
-        pros::lcd::print(1, "Pwr:%.0f", power);
+        // 用 3 行 LCD 显示 error 调试（用 %d 避免嵌入式 %f 不显示）
+        pros::lcd::print(0, "Drv E:%d in:%d", (int)error, (int)traveled);
+        pros::lcd::print(1, "Pwr:%d", (int)power);
 
         if (fabs(error) < 0.5) break;
         pros::delay(20);
@@ -194,9 +194,9 @@ void turnToAngle(double targetDeg) {
         left_motors.move(-power);
         right_motors.move(power);
 
-        // LCD 显示 error 调试（不碰 Brain 大屏）
-        pros::lcd::print(0, "Turn E:%.1f deg", error);
-        pros::lcd::print(1, "cur:%.0f Pwr:%.0f", curr, power);
+        // LCD 显示 error 调试（用 %d 避免 %f 不显示）
+        pros::lcd::print(0, "Turn E:%d deg", (int)error);
+        pros::lcd::print(1, "cur:%d Pwr:%d", (int)curr, (int)power);
 
         if (fabs(error) < 1.0) break;
         pros::delay(20);
@@ -348,10 +348,10 @@ void opcontrol() {
         }
 
         // -------------------------------
-        // 仅用 3 行 LCD 显示（不碰 Brain 大屏，避免参数面板闪烁）
+        // 仅用 3 行 LCD 显示（用 %d 避免嵌入式 %f 不显示）
         // -------------------------------
-        pros::lcd::print(0, "H:%.1f deg  in:%.1f", robotHeadingDeg, traveledIn);
-        pros::lcd::print(1, "X:%.1f  Y:%.1f", robotX, robotY);
+        pros::lcd::print(0, "H:%d deg in:%d", (int)robotHeadingDeg, (int)traveledIn);
+        pros::lcd::print(1, "X:%d Y:%d", (int)robotX, (int)robotY);
         pros::lcd::print(2, "odom deg:%d", (int)forwardOdom.get_position());
 
         pros::delay(20);
