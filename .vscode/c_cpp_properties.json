@@ -4,24 +4,28 @@
       "name": "PROS Project",
       "includePath": [
         "${workspaceFolder}/**",
-        "c:\\Users\\admin\\Desktop\\newcode\\OrbweaversProsCodeLatest-2-1\\include"
+        "c:\\Users\\admin\\Desktop\\newcode\\OrbweaversProsCodeLatest-2-1\\include",
+        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2/include"
       ],
       "defines": [
         "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],
-      "compilerPath": "c:\\Users\\admin\\AppData\\Roaming\\Code\\User\\globalStorage\\sigbots.pros\\install\\pros-toolchain-windows\\usr\\bin\\arm-none-eabi-g++",
+      "compilerPath": "/Users/mohottala/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
       "cStandard": "gnu11",
       "cppStandard": "gnu++20",
       "intelliSenseMode": "gcc-arm",
       "browse": {
         "path": [
-          "c:\\Users\\admin\\Desktop\\newcode\\OrbweaversProsCodeLatest-2-1"
+          "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
-      }
+      },
+      "macFrameworkPath": [
+        "/System/Library/Frameworks"
+      ]
     }
   ],
   "version": 4
