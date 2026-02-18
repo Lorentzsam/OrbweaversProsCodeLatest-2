@@ -1,6 +1,6 @@
 # OrbweaversProsCodeLatest
 
-VEX PROS 项目，含底盘 PID（直线/转向）与积分项。
+VEX PROS 项目，含底盘 PID（直线/转向）与积分项，以及 V5 Brain 屏幕上的 PID 速度曲线可视化（红=目标，绿=实际）。
 
 ## 构建 (Building)
 
