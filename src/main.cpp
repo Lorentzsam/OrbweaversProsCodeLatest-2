@@ -300,48 +300,46 @@ void autonomous() {
 
 // -------------------------------
 // OPERATOR CONTROL
+// 键位：左/右摇杆Y=底盘 | R1/R2=收 intake 正/反 | L1=气管切换 | A/B=翼伸出/缩回 | UP=臂自动序列 X=臂上 Y/DOWN=臂下
 // -------------------------------
 void opcontrol() {
-
-    while (!master.is_connected()) {
+    // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
+    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) {
         left_motors.move(0);
         right_motors.move(0);
         motorIntake.move(0);
         motorArm.move(0);
         wing.move(0);
-
-        pros::lcd::set_text(0, "WAITING FOR CONTROLLER");
+        pros::lcd::set_text(0, "WAIT CTRL...");
         pros::delay(20);
     }
 
-    pros::lcd::set_text(0, "CONTROLLER CONNECTED");
+    pros::lcd::set_text(0, "CTRL OK");
 
     while (true) {
         updateOdometry();
         double traveledIn = forwardOdom.get_position() * CENTIDEG_TO_DEG * DIST_PER_DEG;
 
-        if (!master.is_connected()) {
-            left_motors.move(0);
-            right_motors.move(0);
-            motorIntake.move(0);
-            motorArm.move(0);
-            wing.move(0);
-
-            pros::lcd::set_text(0, "CONTROLLER LOST");
-            pros::delay(20);
-            continue;
-        }
-
-        // -------------------------------
-        // DRIVE (TANK)
-        // -------------------------------
+        // 先读摇杆，Program/Run 都可用；未连接时强制为 0 保安全
         int leftPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        bool connected = master.is_connected();
+        if (!connected) {
+            leftPower = 0;
+            rightPower = 0;
+            pros::lcd::set_text(0, "CTRL LOST");
+        }
 
         left_motors.move(-leftPower);
         right_motors.move(rightPower);
+
+        if (!connected) {
+            motorIntake.move(0);
+            motorArm.move(0);
+            wing.move(0);
+        }
 
         // -------------------------------
         // PID 速度曲线：目标 vs 实际（Brain 屏幕）
@@ -378,11 +376,11 @@ void opcontrol() {
         tube_piston.set_value(tubeExtended);
 
         // -------------------------------
-        // WING
+        // WING（A=伸出 B=缩回，与 D-pad 方向键区分）
         // -------------------------------
-        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A))
             wing.move(127);
-        else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT))
+        else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B))
             wing.move(-127);
         else
             wing.move(0);
