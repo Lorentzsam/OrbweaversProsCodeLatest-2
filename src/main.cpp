@@ -137,19 +137,19 @@ void drawVelocityGraph(int targetVel, double actualRPM) {
     pros::screen::draw_line(GRAPH_LEFT, GRAPH_CENTER_Y,
                             GRAPH_LEFT + GRAPH_WIDTH, GRAPH_CENTER_Y);
 
-    // 红色：目标速度曲线
+    // 红色：目标速度曲线（不连接首尾，避免屏左右边缘的折线）
     pros::screen::set_pen(pros::Color::red);
-    for (int i = 0; i < GRAPH_WIDTH; i++) {
-        int j = (i + 1) % GRAPH_WIDTH;
+    for (int i = 0; i < GRAPH_WIDTH - 1; i++) {
+        int j = i + 1;
         pros::screen::draw_line(
             GRAPH_LEFT + i, targetYHistory[i],
             GRAPH_LEFT + j, targetYHistory[j]);
     }
 
-    // 绿色：实际速度曲线
+    // 绿色：实际速度曲线（同上）
     pros::screen::set_pen(pros::Color::green);
-    for (int i = 0; i < GRAPH_WIDTH; i++) {
-        int j = (i + 1) % GRAPH_WIDTH;
+    for (int i = 0; i < GRAPH_WIDTH - 1; i++) {
+        int j = i + 1;
         pros::screen::draw_line(
             GRAPH_LEFT + i, actualYHistory[i],
             GRAPH_LEFT + j, actualYHistory[j]);
@@ -350,9 +350,12 @@ void opcontrol() {
         double actualRPM = 0;
         auto leftVel = left_motors.get_actual_velocity_all();
         auto rightVel = right_motors.get_actual_velocity_all();
-        for (double v : leftVel) actualRPM -= v;   // 左侧电机反向，取负
-        for (double v : rightVel) actualRPM += v;
-        actualRPM /= (leftVel.size() + rightVel.size());
+        size_t totalMotors = leftVel.size() + rightVel.size();
+        if (totalMotors > 0) {
+            for (double v : leftVel) actualRPM -= v;   // 左侧电机反向，取负
+            for (double v : rightVel) actualRPM += v;
+            actualRPM /= (double)totalMotors;
+        }
         drawVelocityGraph(targetVel, actualRPM);
 
         // -------------------------------
