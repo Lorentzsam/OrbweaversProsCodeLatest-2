@@ -1,8 +1,11 @@
 #include "main.h"
 #include "liblvgl/llemu.h"
+#include "pros/screen.hpp"
+#include "pros/colors.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cstdio>
+#include <vector>
 
 // -------------------------------
 // CONTROLLER
@@ -89,6 +92,78 @@ double TURN_kD = 0.15;
 // 积分限幅，防止积分饱和
 const double DRIVE_INTEGRAL_CAP = 30.0;
 const double TURN_INTEGRAL_CAP = 15.0;
+
+// -------------------------------
+// PID 速度曲线可视化 (V5 Brain 屏幕)
+// -------------------------------
+const int GRAPH_WIDTH = 400;
+const int GRAPH_HEIGHT = 200;
+const int GRAPH_LEFT = 20;
+const int GRAPH_TOP = 15;
+const int GRAPH_CENTER_Y = GRAPH_TOP + GRAPH_HEIGHT / 2;  // 115
+// 目标速度 -127~127 映射到 ±(GRAPH_HEIGHT/2-5) 像素
+const double TARGET_SCALE = (GRAPH_HEIGHT / 2.0 - 5) / 127.0;
+// 实际速度 RPM 约 ±200 映射到同一范围
+const double ACTUAL_RPM_SCALE = (GRAPH_HEIGHT / 2.0 - 5) / 200.0;
+
+static std::vector<int16_t> targetYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
+static std::vector<int16_t> actualYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
+static int graphWriteIndex = 0;
+
+// 在 Brain 屏幕上绘制两条速度曲线（红=目标，绿=实际）
+void drawVelocityGraph(int targetVel, double actualRPM) {
+    // 将目标速度（手柄 -127~127）转为 Y 坐标，正速度向上
+    int targetY = GRAPH_CENTER_Y - (int)(targetVel * TARGET_SCALE);
+    int actualY = GRAPH_CENTER_Y - (int)(actualRPM * ACTUAL_RPM_SCALE);
+    // 限幅
+    if (targetY < GRAPH_TOP) targetY = GRAPH_TOP;
+    if (targetY > GRAPH_TOP + GRAPH_HEIGHT) targetY = GRAPH_TOP + GRAPH_HEIGHT;
+    if (actualY < GRAPH_TOP) actualY = GRAPH_TOP;
+    if (actualY > GRAPH_TOP + GRAPH_HEIGHT) actualY = GRAPH_TOP + GRAPH_HEIGHT;
+
+    targetYHistory[graphWriteIndex] = (int16_t)targetY;
+    actualYHistory[graphWriteIndex] = (int16_t)actualY;
+
+    int nextIdx = (graphWriteIndex + 1) % GRAPH_WIDTH;
+
+    // 清空绘图区域（黑底）
+    pros::screen::set_eraser(pros::Color::black);
+    pros::screen::erase_rect(GRAPH_LEFT, GRAPH_TOP,
+                            GRAPH_LEFT + GRAPH_WIDTH,
+                            GRAPH_TOP + GRAPH_HEIGHT);
+
+    // 画中线（灰色）便于读零
+    pros::screen::set_pen(pros::Color::grey);
+    pros::screen::draw_line(GRAPH_LEFT, GRAPH_CENTER_Y,
+                            GRAPH_LEFT + GRAPH_WIDTH, GRAPH_CENTER_Y);
+
+    // 红色：目标速度曲线
+    pros::screen::set_pen(pros::Color::red);
+    for (int i = 0; i < GRAPH_WIDTH; i++) {
+        int j = (i + 1) % GRAPH_WIDTH;
+        pros::screen::draw_line(
+            GRAPH_LEFT + i, targetYHistory[i],
+            GRAPH_LEFT + j, targetYHistory[j]);
+    }
+
+    // 绿色：实际速度曲线
+    pros::screen::set_pen(pros::Color::green);
+    for (int i = 0; i < GRAPH_WIDTH; i++) {
+        int j = (i + 1) % GRAPH_WIDTH;
+        pros::screen::draw_line(
+            GRAPH_LEFT + i, actualYHistory[i],
+            GRAPH_LEFT + j, actualYHistory[j]);
+    }
+
+    // 图例与数值（右侧）
+    pros::screen::set_pen(pros::Color::white);
+    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP, "R:Target");
+    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 12, "G:Actual");
+    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 28, "T:%d", targetVel);
+    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 40, "A:%.0f", actualRPM);
+
+    graphWriteIndex = nextIdx;
+}
 
 // -------------------------------
 // INITIALIZE
@@ -267,6 +342,18 @@ void opcontrol() {
 
         left_motors.move(-leftPower);
         right_motors.move(rightPower);
+
+        // -------------------------------
+        // PID 速度曲线：目标 vs 实际（Brain 屏幕）
+        // -------------------------------
+        int targetVel = (leftPower + rightPower) / 2;  // 手柄目标（左右摇杆平均）
+        double actualRPM = 0;
+        auto leftVel = left_motors.get_actual_velocity_all();
+        auto rightVel = right_motors.get_actual_velocity_all();
+        for (double v : leftVel) actualRPM -= v;   // 左侧电机反向，取负
+        for (double v : rightVel) actualRPM += v;
+        actualRPM /= (leftVel.size() + rightVel.size());
+        drawVelocityGraph(targetVel, actualRPM);
 
         // -------------------------------
         // INTAKE
