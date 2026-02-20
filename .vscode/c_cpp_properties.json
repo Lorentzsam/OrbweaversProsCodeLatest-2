@@ -1,47 +1,30 @@
 {
   "configurations": [
     {
-<<<<<<< HEAD
-      "name": "PROS Project",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "c:\\Users\\admin\\Desktop\\newcode\\OrbweaversProsCodeLatest-2-1\\include",
-        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2/include"
-=======
       "name": "macos-gcc-arm64",
       "includePath": [
         "${workspaceFolder}/**",
-        "${workspaceFolder}/include",
-        "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2/include"
->>>>>>> 37ef672695860faf08a7f7781a4900f02f1f282c
+        "${workspaceFolder}/include"
       ],
       "defines": [
         "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],
-<<<<<<< HEAD
-      "compilerPath": "/Users/mohottala/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
-=======
-      "compilerPath": "/Users/sam/Library/Application Support/Cursor/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
->>>>>>> 37ef672695860faf08a7f7781a4900f02f1f282c
+      "compilerPath": "/opt/homebrew/bin/arm-none-eabi-gcc",
       "cStandard": "gnu11",
       "cppStandard": "gnu++20",
-      "intelliSenseMode": "gcc-arm",
+      "intelliSenseMode": "macos-gcc-arm64",
+      "macFrameworkPath": [
+        "/System/Library/Frameworks"
+      ],
       "browse": {
         "path": [
-<<<<<<< HEAD
-          "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2"
-=======
-          "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2"
->>>>>>> 37ef672695860faf08a7f7781a4900f02f1f282c
+          "/Users/sam/OrbweaversProsCodeLatest-2"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
-      },
-      "macFrameworkPath": [
-        "/System/Library/Frameworks"
-      ]
+      }
     }
   ],
   "version": 4

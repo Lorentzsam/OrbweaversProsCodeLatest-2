@@ -330,69 +330,54 @@ void autonomous() {
 
 // -------------------------------
 // OPERATOR CONTROL
-// 键位：左/右摇杆Y=底盘 | R1/R2=收 intake 正/反 | L1=气管切换 | A/B=翼伸出/缩回 | UP=臂自动序列 X=臂上 Y/DOWN=臂下
 // -------------------------------
 void opcontrol() {
-    // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
-    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) {
+
+    while (!master.is_connected()) {
         left_motors.move(0);
         right_motors.move(0);
         motorIntake.move(0);
         motorArm.move(0);
         wing.move(0);
-        pros::lcd::set_text(0, "WAIT CTRL...");
+
+        pros::lcd::set_text(0, "WAITING FOR CONTROLLER");
         pros::delay(20);
     }
 
-    pros::lcd::set_text(0, "CTRL OK");
+    pros::lcd::set_text(0, "CONTROLLER CONNECTED");
 
     while (true) {
-        updateOdometry();
-        double traveledIn = forwardOdom.get_position() * CENTIDEG_TO_DEG * DIST_PER_DEG;
 
-        // 先读摇杆，Program/Run 都可用；未连接时强制为 0 保安全
+        if (!master.is_connected()) {
+            left_motors.move(0);
+            right_motors.move(0);
+            motorIntake.move(0);
+            motorArm.move(0);
+            wing.move(0);
+
+            pros::lcd::set_text(0, "CONTROLLER LOST");
+            pros::delay(20);
+            continue;
+        }
+
+        // -------------------------------
+        // DRIVE (TANK)
+        // -------------------------------
         int leftPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-        bool connected = master.is_connected();
-        if (!connected) {
-            leftPower = 0;
-            rightPower = 0;
-            pros::lcd::set_text(0, "CTRL LOST");
-        }
 
         left_motors.move(-leftPower);
-        right_motors.move(rightPower);
-
-        if (!connected) {
-            motorIntake.move(0);
-            motorArm.move(0);
-            wing.move(0);
-        }
-
-        // -------------------------------
-        // PID 速度曲线：目标 vs 实际（Brain 屏幕）
-        // -------------------------------
-        int targetVel = (leftPower + rightPower) / 2;  // 手柄目标（左右摇杆平均）
-        double actualRPM = 0;
-        auto leftVel = left_motors.get_actual_velocity_all();
-        auto rightVel = right_motors.get_actual_velocity_all();
-        size_t totalMotors = leftVel.size() + rightVel.size();
-        if (totalMotors > 0) {
-            for (double v : leftVel) actualRPM -= v;   // 左侧电机反向，取负
-            for (double v : rightVel) actualRPM += v;
-            actualRPM /= (double)totalMotors;
-        }
-        drawVelocityGraph(targetVel, actualRPM);
+        right_motors.move(rightPower * 0.8);
 
         // -------------------------------
         // INTAKE
         // -------------------------------
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
-            motorIntake.move(100);
+            motorIntake.move(127);
         else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
-            motorIntake.move(-100);
+            motorIntake.move(-127);
         else
             motorIntake.move(0);
 
@@ -406,11 +391,11 @@ void opcontrol() {
         tube_piston.set_value(tubeExtended);
 
         // -------------------------------
-        // WING（A=伸出 B=缩回，与 D-pad 方向键区分）
+        // WING
         // -------------------------------
-        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A))
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
             wing.move(127);
-        else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B))
+        else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT))
             wing.move(-127);
         else
             wing.move(0);
@@ -467,13 +452,6 @@ void opcontrol() {
                     motorArm.move(0);
                 break;
         }
-
-        // -------------------------------
-        // 仅用 3 行 LCD 显示（用 %d 避免嵌入式 %f 不显示）
-        // -------------------------------
-        pros::lcd::print(0, "H:%d deg in:%d", (int)robotHeadingDeg, (int)traveledIn);
-        pros::lcd::print(1, "X:%d Y:%d", (int)robotX, (int)robotY);
-        pros::lcd::print(2, "odom deg:%d", (int)(forwardOdom.get_position() * CENTIDEG_TO_DEG));
 
         pros::delay(20);
     }
