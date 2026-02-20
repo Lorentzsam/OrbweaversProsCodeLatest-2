@@ -1,31 +1,37 @@
 {
   "configurations": [
     {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/include"
+      ],
+      "defines": ["_DEBUG", "UNICODE", "_UNICODE", "_GNU_SOURCE"],
+      "compilerPath": "/usr/bin/arm-none-eabi-g++",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++20",
+      "intelliSenseMode": "gcc-arm",
+      "browse": {
+        "path": ["${workspaceFolder}"],
+        "limitSymbolsToIncludedHeaders": true
+      }
+    },
+    {
       "name": "macos-gcc-arm64",
       "includePath": [
         "${workspaceFolder}/**",
-        "${workspaceFolder}/include",
-        "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2/include"
+        "${workspaceFolder}/include"
       ],
-      "defines": [
-        "_DEBUG",
-        "UNICODE",
-        "_UNICODE"
-      ],
+      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "compilerPath": "/Users/sam/Library/Application Support/Cursor/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
       "cStandard": "gnu11",
       "cppStandard": "gnu++20",
       "intelliSenseMode": "gcc-arm",
       "browse": {
-        "path": [
-          "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2"
-        ],
-        "limitSymbolsToIncludedHeaders": true,
-        "databaseFilename": ""
+        "path": ["${workspaceFolder}"],
+        "limitSymbolsToIncludedHeaders": true
       },
-      "macFrameworkPath": [
-        "/System/Library/Frameworks"
-      ]
+      "macFrameworkPath": ["/System/Library/Frameworks"]
     }
   ],
   "version": 4
