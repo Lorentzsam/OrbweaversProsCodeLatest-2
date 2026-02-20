@@ -96,7 +96,7 @@ const double TURN_INTEGRAL_CAP = 15.0;
 // Error 曲线图：V5 屏幕 480x240，水平零线在中心，error 映射为 Y 偏移
 const int SCREEN_W = 480;
 const int SCREEN_H = 240;
-const int GRAPH_CENTER_Y = 120;
+// const int GRAPH_CENTER_Y = 115;
 const double DRIVE_ERROR_SCALE = 5.0;   // 像素/英寸
 const double TURN_ERROR_SCALE = 2.0;   // 像素/度
 
