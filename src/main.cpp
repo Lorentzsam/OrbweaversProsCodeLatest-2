@@ -1,4 +1,5 @@
 #include "main.h"
+#include "config.hpp"
 #include "liblvgl/llemu.h"
 #include "pros/screen.hpp"
 #include "pros/colors.hpp"
@@ -173,14 +174,20 @@ void initialize() {
     pros::lcd::set_text(0, "CALIBRATING IMU");
 
     imu.reset();
+    int calElapsed = 0;
     while (imu.is_calibrating()) {
         pros::delay(10);
+        calElapsed += 10;
+        if (calElapsed >= IMU_CAL_TIMEOUT_MS) {
+            pros::lcd::set_text(0, "IMU CAL FAIL!");
+            break;
+        }
     }
 
     forwardOdom.reset_position();
     robotX = robotY = 0.0;
 
-    pros::lcd::set_text(0, "READY");
+    pros::lcd::set_text(0, calElapsed >= IMU_CAL_TIMEOUT_MS ? "IMU FAIL" : "READY");
 }
 
 // -------------------------------
@@ -209,6 +216,7 @@ void driveDistance(double inches) {
     forwardOdom.reset_position();
     double prevError = inches;
     double integral = 0.0;
+    int elapsed = 0;
 
     while (true) {
         updateOdometry();
@@ -225,11 +233,11 @@ void driveDistance(double inches) {
 
         double power =
             DRIVE_kP * error + DRIVE_kI * integral + DRIVE_kD * derivative;
-        if (power > 100.0) power = 100.0;
-        else if (power < -100.0) power = -100.0;
+        if (power > DRIVE_POWER_CAP) power = DRIVE_POWER_CAP;
+        else if (power < -DRIVE_POWER_CAP) power = -DRIVE_POWER_CAP;
 
         double headingError = imu.get_rotation();
-        double turn = headingError * 1.2; // >>> YOU TUNE <<<
+        double turn = headingError * IMU_HOLD_GAIN;
 
         left_motors.move(power - turn);
         right_motors.move(power + turn);
@@ -238,25 +246,39 @@ void driveDistance(double inches) {
         pros::lcd::print(0, "Drv E:%d in:%d", (int)error, (int)traveled);
         pros::lcd::print(1, "Pwr:%d", (int)power);
 
-        if (fabs(error) < 0.5) break;
+        if (fabs(error) < DRIVE_TOLERANCE_IN) break;
+
+        elapsed += 20;
+        if (elapsed >= DRIVE_TIMEOUT_MS) {
+            pros::lcd::set_text(0, "Drv TIMEOUT!");
+            break;
+        }
         pros::delay(20);
     }
 
     left_motors.move(0);
     right_motors.move(0);
-    pros::lcd::set_text(0, "Drv OK");
+    pros::lcd::set_text(0, elapsed >= DRIVE_TIMEOUT_MS ? "Drv FAIL" : "Drv OK");
 }
 
 // -------------------------------
 // TURN TO ANGLE (PID)
 // -------------------------------
+// 将角度误差归一化到 [-180, 180]
+static double normalizeAngleError(double error) {
+    while (error > 180.0) error -= 360.0;
+    while (error < -180.0) error += 360.0;
+    return error;
+}
+
 void turnToAngle(double targetDeg) {
-    double prevError = targetDeg;
+    double prevError = 0.0;
     double integral = 0.0;
+    int elapsed = 0;
 
     while (true) {
         double curr = imu.get_rotation();
-        double error = targetDeg - curr;
+        double error = normalizeAngleError(targetDeg - curr);
         double derivative = error - prevError;
         prevError = error;
 
@@ -266,8 +288,8 @@ void turnToAngle(double targetDeg) {
 
         double power =
             TURN_kP * error + TURN_kI * integral + TURN_kD * derivative;
-        if (power > 90.0) power = 90.0;
-        else if (power < -90.0) power = -90.0;
+        if (power > TURN_POWER_CAP) power = TURN_POWER_CAP;
+        else if (power < -TURN_POWER_CAP) power = -TURN_POWER_CAP;
 
         left_motors.move(-power);
         right_motors.move(power);
@@ -276,13 +298,42 @@ void turnToAngle(double targetDeg) {
         pros::lcd::print(0, "Turn E:%d deg", (int)error);
         pros::lcd::print(1, "cur:%d Pwr:%d", (int)curr, (int)power);
 
-        if (fabs(error) < 1.0) break;
+        if (fabs(error) < TURN_TOLERANCE_DEG) break;
+
+        elapsed += 20;
+        if (elapsed >= TURN_TIMEOUT_MS) {
+            pros::lcd::set_text(0, "Turn TIMEOUT!");
+            break;
+        }
         pros::delay(20);
     }
 
     left_motors.move(0);
     right_motors.move(0);
-    pros::lcd::set_text(0, "Turn OK");
+    pros::lcd::set_text(0, elapsed >= TURN_TIMEOUT_MS ? "Turn FAIL" : "Turn OK");
+}
+
+// -------------------------------
+// DISABLED（禁用时停止所有电机与机构）
+// -------------------------------
+void disabled() {
+    left_motors.move(0);
+    right_motors.move(0);
+    motorIntake.move(0);
+    motorArm.move(0);
+    wing.move(0);
+    tubeExtended = false;
+    tube_piston.set_value(tubeExtended);
+    armState = IDLE;
+    armCounter = 0;
+    pros::lcd::set_text(0, "DISABLED");
+}
+
+// -------------------------------
+// COMPETITION INITIALIZE（比赛开始前）
+// -------------------------------
+void competition_initialize() {
+    pros::lcd::set_text(0, "MATCH READY");
 }
 
 // -------------------------------
