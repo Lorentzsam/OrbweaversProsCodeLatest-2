@@ -6,4 +6,12 @@
 - **代码改动**：无（仅系统安装，未修改项目文件）
 - **状态标签**：✅完成
 
+## 2026-02-20 替换 opcontrol 操控逻辑
+
+- **对话标题**：使用指定文件的 controller 操控逻辑
+- **用户需求**：用提供的 main.cpp 中的 controller 操控逻辑替换当前 opcontrol，不更改其他部分
+- **解决方案**：将 opcontrol() 替换为提供的版本——手柄等待 while(!connected)、右轮 0.8 系数、Intake 127/-127、Wing 改为 RIGHT/LEFT、移除 updateOdometry/drawVelocityGraph/LCD 里程计
+- **代码改动**：`src/main.cpp` — 修改 opcontrol() 函数
+- **状态标签**：✅完成
+
 ---
