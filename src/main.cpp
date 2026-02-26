@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <vector>
+#include "pros/link.hpp"
 
 // to everyone who is reading:
 //this thing is a shit and nobody can read it
@@ -365,7 +366,6 @@ void autonomous() {
 
 // -------------------------------
 // OPERATOR CONTROL
-<<<<<<< HEAD
 // 键位：左/右摇杆Y=底盘 | R1/R2=收 intake 正/反 | L1=气管切换 | A/B=翼伸出/缩回 | UP=臂自动序列 X=臂上 Y/DOWN=臂下
 // Keypad: Left/Right Joystick Y = Chassis | R1/R2 = Intake Forward/Reverse | L1 = Airway Switch 
 // A/B = Wing Extension/Retraction | UP = Automatic Arm Sequence X = Arm Up Y/DOWN = Arm Down
@@ -373,13 +373,11 @@ void autonomous() {
 void opcontrol() {
     // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
     // Wait a maximum of about 3 seconds before entering the main loop to avoid freezing in Program mode if is_connected() is not ready.
-    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) {
-=======
+    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) ;}
 // -------------------------------
 void opcontrol() {
 
     while (!master.is_connected()) {
->>>>>>> origin/start-over
         left_motors.move(0);
         right_motors.move(0);
         motorIntake.move(0);
@@ -394,11 +392,9 @@ void opcontrol() {
 
     while (true) {
 
-<<<<<<< HEAD
         // 先读摇杆，Program/Run 都可用；未连接时强制为 0 保安全
         // First, check the joystick settings
         // both Program and Run are available. Force a setting of 0 for safety if not connected.
-=======
         if (!master.is_connected()) {
             left_motors.move(0);
             right_motors.move(0);
@@ -414,14 +410,12 @@ void opcontrol() {
         // -------------------------------
         // DRIVE (TANK)
         // -------------------------------
->>>>>>> origin/start-over
         int leftPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         left_motors.move(-leftPower);
-<<<<<<< HEAD
         right_motors.move(rightPower);
 
         if (!connected) {
@@ -447,9 +441,7 @@ void opcontrol() {
             actualRPM /= (double)totalMotors;
         }
         drawVelocityGraph(targetVel, actualRPM);
-=======
         right_motors.move(rightPower * 0.8);
->>>>>>> origin/start-over
 
         // -------------------------------
         // INTAKE
@@ -471,12 +463,9 @@ void opcontrol() {
         tube_piston.set_value(tubeExtended);
 
         // -------------------------------
-<<<<<<< HEAD
         // WING（A=伸出 B=缩回，与 D-pad 方向键区分）
         // (A = extend, B = retract, distinguish it from the D-pad arrow keys)
-=======
         // WING
->>>>>>> origin/start-over
         // -------------------------------
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
             wing.move(127);
@@ -538,7 +527,6 @@ void opcontrol() {
                 break;
         }
 
-<<<<<<< HEAD
         // -------------------------------
         // 仅用 3 行 LCD 显示（用 %d 避免嵌入式 %f 不显示）
         // Display using only 3 lines of LCD (using %d to avoid embedded %f not being displayed)
@@ -547,8 +535,6 @@ void opcontrol() {
         pros::lcd::print(1, "X:%d Y:%d", (int)robotX, (int)robotY);
         pros::lcd::print(2, "odom deg:%d", (int)(forwardOdom.get_position() * CENTIDEG_TO_DEG));
 
-=======
->>>>>>> origin/start-over
         pros::delay(20);
     }
 }

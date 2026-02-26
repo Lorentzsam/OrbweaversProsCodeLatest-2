@@ -1,40 +1,30 @@
 {
   "configurations": [
     {
-<<<<<<< HEAD
       "name": "PROS Project",
       "includePath": [
         "${workspaceFolder}/**",
         "c:\\Users\\admin\\Desktop\\newcode\\OrbweaversProsCodeLatest-2-1\\include",
-        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2/include"
-=======
+        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2/include"],
+      
       "name": "macos-gcc-arm64",
       "includePath": [
         "${workspaceFolder}/**",
         "${workspaceFolder}/include",
         "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2/include"
->>>>>>> 37ef672695860faf08a7f7781a4900f02f1f282c
       ],
       "defines": [
         "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],
-<<<<<<< HEAD
       "compilerPath": "/Users/mohottala/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
-=======
-      "compilerPath": "/Users/sam/Library/Application Support/Cursor/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
->>>>>>> 37ef672695860faf08a7f7781a4900f02f1f282c
       "cStandard": "gnu11",
       "cppStandard": "gnu++20",
       "intelliSenseMode": "gcc-arm",
       "browse": {
         "path": [
-<<<<<<< HEAD
           "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2"
-=======
-          "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2"
->>>>>>> 37ef672695860faf08a7f7781a4900f02f1f282c
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
