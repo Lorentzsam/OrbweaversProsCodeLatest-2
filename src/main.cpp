@@ -418,11 +418,11 @@ void opcontrol() {
         left_motors.move(-leftPower);
         right_motors.move(rightPower);
 
-        if (!connected) {
-            motorIntake.move(0);
-            motorArm.move(0);
-            wing.move(0);
-        }
+        //if (!connected) {
+        //    motorIntake.move(0);
+        //    motorArm.move(0);
+        //    wing.move(0);
+        //}
         // The comment needed to be fixed because I cannot include pros/link.hpp
         
 
