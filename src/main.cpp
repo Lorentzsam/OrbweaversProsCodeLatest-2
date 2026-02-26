@@ -423,6 +423,9 @@ void opcontrol() {
             motorArm.move(0);
             wing.move(0);
         }
+        // The comment needed to be fixed because I cannot include pros/link.hpp
+        
+
 
         // -------------------------------
         // PID 速度曲线：目标 vs 实际（Brain 屏幕）
@@ -531,7 +534,11 @@ void opcontrol() {
         // 仅用 3 行 LCD 显示（用 %d 避免嵌入式 %f 不显示）
         // Display using only 3 lines of LCD (using %d to avoid embedded %f not being displayed)
         // -------------------------------
-        pros::lcd::print(0, "H:%d deg in:%d", (int)robotHeadingDeg, (int)traveledIn);
+        //pros::lcd::print(0, "H:%d deg in:%d", (int)robotHeadingDeg, (int)traveledIn);
+
+        // WARNING: traveledIn IS NOT DEFINED IN OPCONTROL, THIS LINE WILL CAUSE A COMPILATION ERROR IF UNCOMMENTED
+
+
         pros::lcd::print(1, "X:%d Y:%d", (int)robotX, (int)robotY);
         pros::lcd::print(2, "odom deg:%d", (int)(forwardOdom.get_position() * CENTIDEG_TO_DEG));
 
