@@ -2,7 +2,7 @@
 
 
 ## To do:
-[x] Fix Driving
+[*] Fix Driving
 [ ] Try moving on its own
 ## Debugging
 In main.cpp:
