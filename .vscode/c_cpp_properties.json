@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include",
                 "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2/include",
-                "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include"
+                "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include",
+                "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include/**"
             ],
             "defines": [
                 "_DEBUG",
