@@ -1,7 +1,5 @@
 #include "main.h"
 #include "liblvgl/llemu.h"
-#include "pros/screen.hpp"
-#include "pros/colors.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cstdio>
@@ -93,85 +91,6 @@ double TURN_kD = 0.15;
 const double DRIVE_INTEGRAL_CAP = 30.0;
 const double TURN_INTEGRAL_CAP = 15.0;
 
-// Error 曲线图：V5 屏幕 480x240，水平零线在中心，error 映射为 Y 偏移
-const int SCREEN_W = 480;
-const int SCREEN_H = 240;
-// const int GRAPH_CENTER_Y = 115;
-const double DRIVE_ERROR_SCALE = 5.0;   // 像素/英寸
-const double TURN_ERROR_SCALE = 2.0;   // 像素/度
-
-// -------------------------------
-// PID 速度曲线可视化 (V5 Brain 屏幕)
-// -------------------------------
-const int GRAPH_WIDTH = 400;
-const int GRAPH_HEIGHT = 200;
-const int GRAPH_LEFT = 20;
-const int GRAPH_TOP = 15;
-const int GRAPH_CENTER_Y = GRAPH_TOP + GRAPH_HEIGHT / 2;  // 115
-// 目标速度 -127~127 映射到 ±(GRAPH_HEIGHT/2-5) 像素
-const double TARGET_SCALE = (GRAPH_HEIGHT / 2.0 - 5) / 127.0;
-// 实际速度 RPM 约 ±200 映射到同一范围
-const double ACTUAL_RPM_SCALE = (GRAPH_HEIGHT / 2.0 - 5) / 200.0;
-
-static std::vector<int16_t> targetYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
-static std::vector<int16_t> actualYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
-static int graphWriteIndex = 0;
-
-// 在 Brain 屏幕上绘制两条速度曲线（红=目标，绿=实际）
-void drawVelocityGraph(int targetVel, double actualRPM) {
-    // 将目标速度（手柄 -127~127）转为 Y 坐标，正速度向上
-    int targetY = GRAPH_CENTER_Y - (int)(targetVel * TARGET_SCALE);
-    int actualY = GRAPH_CENTER_Y - (int)(actualRPM * ACTUAL_RPM_SCALE);
-    // 限幅
-    if (targetY < GRAPH_TOP) targetY = GRAPH_TOP;
-    if (targetY > GRAPH_TOP + GRAPH_HEIGHT) targetY = GRAPH_TOP + GRAPH_HEIGHT;
-    if (actualY < GRAPH_TOP) actualY = GRAPH_TOP;
-    if (actualY > GRAPH_TOP + GRAPH_HEIGHT) actualY = GRAPH_TOP + GRAPH_HEIGHT;
-
-    targetYHistory[graphWriteIndex] = (int16_t)targetY;
-    actualYHistory[graphWriteIndex] = (int16_t)actualY;
-
-    int nextIdx = (graphWriteIndex + 1) % GRAPH_WIDTH;
-
-    // 清空绘图区域（黑底）
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase_rect(GRAPH_LEFT, GRAPH_TOP,
-                            GRAPH_LEFT + GRAPH_WIDTH,
-                            GRAPH_TOP + GRAPH_HEIGHT);
-
-    // 画中线（灰色）便于读零
-    pros::screen::set_pen(pros::Color::grey);
-    pros::screen::draw_line(GRAPH_LEFT, GRAPH_CENTER_Y,
-                            GRAPH_LEFT + GRAPH_WIDTH, GRAPH_CENTER_Y);
-
-    // 红色：目标速度曲线（不连接首尾，避免屏左右边缘的折线）
-    pros::screen::set_pen(pros::Color::red);
-    for (int i = 0; i < GRAPH_WIDTH - 1; i++) {
-        int j = i + 1;
-        pros::screen::draw_line(
-            GRAPH_LEFT + i, targetYHistory[i],
-            GRAPH_LEFT + j, targetYHistory[j]);
-    }
-
-    // 绿色：实际速度曲线（同上）
-    pros::screen::set_pen(pros::Color::green);
-    for (int i = 0; i < GRAPH_WIDTH - 1; i++) {
-        int j = i + 1;
-        pros::screen::draw_line(
-            GRAPH_LEFT + i, actualYHistory[i],
-            GRAPH_LEFT + j, actualYHistory[j]);
-    }
-
-    // 图例与数值（右侧）
-    pros::screen::set_pen(pros::Color::white);
-    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP, "R:Target");
-    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 12, "G:Actual");
-    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 28, "T:%d", targetVel);
-    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 40, "A:%.0f", actualRPM);
-
-    graphWriteIndex = nextIdx;
-}
-
 // -------------------------------
 // INITIALIZE
 // -------------------------------
@@ -188,11 +107,6 @@ void initialize() {
     robotX = robotY = 0.0;
 
     pros::lcd::set_text(0, "READY");
-    // Brain 大屏：确认显示正常，自动阶段会画 Error 曲线
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase();
-    pros::screen::set_pen(pros::Color::white);
-    pros::screen::print(pros::E_TEXT_MEDIUM, 2, "Run Autonomous for PID curve");
 }
 
 // -------------------------------
@@ -222,15 +136,6 @@ void driveDistance(double inches) {
     double prevError = inches;
     double integral = 0.0;
 
-    // Error 曲线：清屏（黑底）、画零线（目标），波形收敛即 PID 良好
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase();
-    pros::screen::set_pen(pros::Color::gray);
-    pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
-    pros::screen::set_pen(pros::Color::green);
-    int prevX = -1, prevY = GRAPH_CENTER_Y;
-    int iter = 0;
-
     while (true) {
         updateOdometry();
 
@@ -255,10 +160,6 @@ void driveDistance(double inches) {
         left_motors.move(power - turn);
         right_motors.move(power + turn);
 
-        // 用 3 行 LCD 显示 error 调试（用 %d 避免嵌入式 %f 不显示）
-        pros::lcd::print(0, "Drv E:%d in:%d", (int)error, (int)traveled);
-        pros::lcd::print(1, "Pwr:%d", (int)power);
-
         if (fabs(error) < 0.5) break;
         pros::delay(20);
     }
@@ -274,15 +175,6 @@ void driveDistance(double inches) {
 void turnToAngle(double targetDeg) {
     double prevError = targetDeg;
     double integral = 0.0;
-
-    // Error 曲线：清屏（黑底）、零线 + 波形
-    pros::screen::set_eraser(pros::Color::black);
-    pros::screen::erase();
-    pros::screen::set_pen(pros::Color::gray);
-    pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
-    pros::screen::set_pen(pros::Color::blue);
-    int prevX = -1, prevY = GRAPH_CENTER_Y;
-    int iter = 0;
 
     while (true) {
         double curr = imu.get_rotation();
@@ -301,10 +193,6 @@ void turnToAngle(double targetDeg) {
 
         left_motors.move(-power);
         right_motors.move(power);
-
-        // LCD 显示 error 调试（用 %d 避免 %f 不显示）
-        pros::lcd::print(0, "Turn E:%d deg", (int)error);
-        pros::lcd::print(1, "cur:%d Pwr:%d", (int)curr, (int)power);
 
         if (fabs(error) < 1.0) break;
         pros::delay(20);
