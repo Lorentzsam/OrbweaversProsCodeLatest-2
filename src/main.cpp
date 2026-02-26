@@ -247,6 +247,9 @@ void updateOdometry() {
 // -------------------------------
 // DRIVE STRAIGHT (PID + IMU HOLD)
 // -------------------------------
+
+// The important part of the bot
+// debug in progress
 void driveDistance(double inches) {
     forwardOdom.reset_position();
     double prevError = inches;
@@ -418,13 +421,6 @@ void opcontrol() {
         left_motors.move(-leftPower);
         right_motors.move(rightPower);
 
-        //if (!connected) {
-        //    motorIntake.move(0);
-        //    motorArm.move(0);
-        //    wing.move(0);
-        //}
-        // The comment needed to be fixed because I cannot include pros/link.hpp
-        
 
 
         // -------------------------------
