@@ -373,13 +373,12 @@ void autonomous() {
 // Keypad: Left/Right Joystick Y = Chassis | R1/R2 = Intake Forward/Reverse | L1 = Airway Switch 
 // A/B = Wing Extension/Retraction | UP = Automatic Arm Sequence X = Arm Up Y/DOWN = Arm Down
 // -------------------------------
-void opcontrol() {
-    // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
-    // Wait a maximum of about 3 seconds before entering the main loop to avoid freezing in Program mode if is_connected() is not ready.
-    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) ;}
-// -------------------------------
+
 void opcontrol() {
 
+    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) ;
+    // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
+    // Wait a maximum of about 3 seconds before entering the main loop to avoid freezing in Program mode if is_connected() is not ready.
     while (!master.is_connected()) {
         left_motors.move(0);
         right_motors.move(0);
