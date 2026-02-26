@@ -253,11 +253,21 @@ void opcontrol() {
         // -------------------------------
         int leftPower =
             master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightPower =
-            master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        int rightStick = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        int rightPower = (int)(rightStick * 0.8);
 
-        left_motors.move(-leftPower);
-        right_motors.move(rightPower * 0.8);
+        // 右轮单独固定功率测试：按住 B 时右轮固定功率、左轮停
+        const int RIGHT_MOTOR_TEST_POWER = 60;
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+            left_motors.move(0);
+            right_motors.move(RIGHT_MOTOR_TEST_POWER);
+            pros::lcd::print(0, "Right test:%d", RIGHT_MOTOR_TEST_POWER);
+        } else {
+            left_motors.move(-leftPower);
+            right_motors.move(rightPower);
+            pros::lcd::print(0, "Rstick:%d Rpow:%d", rightStick, rightPower);
+        }
+        pros::lcd::print(1, "RightY raw:%d", rightStick);
 
         // -------------------------------
         // INTAKE
