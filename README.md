@@ -21,6 +21,9 @@
     - [ ] timed run routine
     - [ ] Geometric position get
 - [ ] (for debugging) Output some data on the screen
+    - [ ] position
+    - [ ] controller
+    - [ ] more!
 
 ## Debugging
 In main.cpp:
