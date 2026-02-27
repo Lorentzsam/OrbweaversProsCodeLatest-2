@@ -35,4 +35,5 @@ In main.cpp:
 - fuck microsoft
 - It nuked my compile toolchain
 - You will need Pros addon on VS code to compile and upload it
+- Make sure the ports are correct and it is a vex V5 brain
     
