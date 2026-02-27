@@ -14,13 +14,6 @@
 #include "pros/link.hpp"
 
 
-// to everyone who is reading:
-//this thing is a shit and nobody can read it
-//unfortunately if you read this
-//please try vibe coding with github student pack
-//no I cant cause I used all I can use this month
-//by debugger freepcjoe
-
 //ps: trying to make every line clear
 
 // -------------------------------

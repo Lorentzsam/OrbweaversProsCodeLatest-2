@@ -1,47 +1,48 @@
 {
-    "configurations": [
-        {
-            "name": "macos-gcc-arm64",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/include",
-                "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2/include",
-                "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include",
-                "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include/**",
-                "/Users/mohottala/OrbweaversProsCodeLatest-2-1/include"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "compilerPath": "/Users/mohottala/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
-            "cStandard": "gnu11",
-            "cppStandard": "gnu++20",
-            "intelliSenseMode": "gcc-arm",
-            "browse": {
-                "path": [
-                    "/Users/mohottala/OrbweaversProsCodeLatest-2-1"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            },
-            "macFrameworkPath": [
-                "/System/Library/Frameworks"
-            ]
-        },
-        {
-            "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/**"
-            ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c17",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64",
-            "configurationProvider": "ms-vscode.makefile-tools"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "name": "macos-gcc-arm64",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/include",
+        "/Users/sam/Desktop/OrbweaversProsCodeLatest-main 2/include",
+        "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include",
+        "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include/**",
+        "/Users/mohottala/OrbweaversProsCodeLatest-2-1/include",
+        "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2/include"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "compilerPath": "/Users/mohottala/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++20",
+      "intelliSenseMode": "gcc-arm",
+      "browse": {
+        "path": [
+          "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2"
+        ],
+        "limitSymbolsToIncludedHeaders": true,
+        "databaseFilename": ""
+      },
+      "macFrameworkPath": [
+        "/System/Library/Frameworks"
+      ]
+    },
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [],
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "c17",
+      "cppStandard": "gnu++17",
+      "intelliSenseMode": "linux-gcc-x64",
+      "configurationProvider": "ms-vscode.makefile-tools"
+    }
+  ],
+  "version": 4
 }
