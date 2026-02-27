@@ -2,11 +2,17 @@
 #include "liblvgl/llemu.h"
 #include "pros/screen.hpp"
 #include "pros/colors.hpp"
+#include "pros/adi.hpp"
+#include "pros/motors.hpp"
+#include "pros/imu.hpp"
+#include "pros/rotation.hpp"
+#include "pros/llemu.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cstdio>
 #include <vector>
 #include "pros/link.hpp"
+
 
 // to everyone who is reading:
 //this thing is a shit and nobody can read it
@@ -371,12 +377,14 @@ void autonomous() {
 // A/B = Wing Extension/Retraction | UP = Automatic Arm Sequence X = Arm Up Y/DOWN = Arm Down
 // -------------------------------
 void opcontrol() {
+    // Wait a short time (~3 sec) to let controller connect
     // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
     // Wait a maximum of about 3 seconds before entering the main loop to avoid freezing in Program mode if is_connected() is not ready.
-    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) ;}
-// -------------------------------
-void opcontrol() {
+    for (int wait = 0; wait < 150 && !master.is_connected(); wait++) {
+        pros::delay(20);  // make sure the CPU doesn't freeze
+    }
 
+    // Main controller wait loop
     while (!master.is_connected()) {
         left_motors.move(0);
         right_motors.move(0);
@@ -390,8 +398,10 @@ void opcontrol() {
 
     pros::lcd::set_text(0, "CONTROLLER CONNECTED");
 
+    // Main driver control loop
     while (true) {
 
+        // Safety: if disconnected mid-match
         // 先读摇杆，Program/Run 都可用；未连接时强制为 0 保安全
         // First, check the joystick settings
         // both Program and Run are available. Force a setting of 0 for safety if not connected.
@@ -406,7 +416,7 @@ void opcontrol() {
             pros::delay(20);
             continue;
         }
-
+        
         // -------------------------------
         // DRIVE (TANK)
         // -------------------------------
