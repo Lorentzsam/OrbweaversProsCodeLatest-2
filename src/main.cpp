@@ -131,10 +131,10 @@ static std::vector<int16_t> targetYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
 static std::vector<int16_t> actualYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
 static int graphWriteIndex = 0;
 
-//wth is wrong with this ai
+
 //it just tryed to define GRAPH_CENTER_Y twice and I dont know why
 //we still needs someone who know C++
-//and also who the fuck talked to ai with chinese
+
 
 // 在 Brain 屏幕上绘制两条速度曲线（红=目标，绿=实际）
 // Draw two speed curves on the screen(red=target, green=actual)
