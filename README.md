@@ -16,6 +16,8 @@
     - [ ] Initialization fail?
     - [ ] The screen fuctions
     - [ ] More problems
+- [ ] Add the new motors for orb inputing
+    - Wait They have not installed it 
 - [ ] Try moving on its own
     - [ ] PID function
     - [ ] timed run routine
