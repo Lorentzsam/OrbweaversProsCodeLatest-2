@@ -4,7 +4,8 @@
 - stillllll tyring to make it run
 
 ## To do:
-- [x] Fix Driving
+- [x] Upload code
+- [ ] Fix Driving
 - [ ] Try moving on its own
 ## Debugging
 In main.cpp:
