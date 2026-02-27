@@ -1,5 +1,7 @@
 # OrbweaversProsCodeLatest
-
+## Is This Working
+- no it is not
+- stillllll tyring to make it run
 
 ## To do:
 - [x] Fix Driving
@@ -10,4 +12,7 @@ In main.cpp:
     - The if should be fixed because I cannot include link.hpp
 - [ ] line 534:
     - I commented a line because an important varible was not defined.
+## Compiling
+- fuck microsoft
+- It nuked my compile toolchain
     
