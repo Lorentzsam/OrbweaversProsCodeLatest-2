@@ -10,10 +10,11 @@
 ## Debugging
 In main.cpp:
 - [ ] line 421:
-    - The if should be fixed because I cannot include link.hpp
+    - There was something which can check if the controler is connected
 - [ ] line 534:
     - I commented a line because an important varible was not defined.
 ## Compiling
 - fuck microsoft
 - It nuked my compile toolchain
+- You will need Pros addon on VS code to compile and upload it
     
