@@ -9,7 +9,6 @@
     - [x] couputer #1
     - [x] computer #2
     - [x] computer #3
-    - Yes now we have triple solutions
 - [ ] Fix Driving
     - [x] Motors are good
     - [ ] Code can't ruuun
