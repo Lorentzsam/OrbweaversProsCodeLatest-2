@@ -4,9 +4,24 @@
 - stillllll tyring to make it run
 
 ## To do:
+- [x] Make this file fancy :)
 - [x] Upload code
+    - [x] couputer #1
+    - [x] computer #2
+    - [x] computer #3
 - [ ] Fix Driving
+    - [x] Motors are good
+    - [ ] Code can't ruuun
+    - [ ] Is controller connected and can output joystick status
+    - [ ] Initialization fail?
+    - [ ] The screen fuctions
+    - [ ] More problems
 - [ ] Try moving on its own
+    - [ ] PID function
+    - [ ] timed run routine
+    - [ ] Geometric position get
+- [ ] (for debugging) Output some data on the screen
+
 ## Debugging
 In main.cpp:
 - [ ] line 421:
