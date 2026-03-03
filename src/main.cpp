@@ -14,13 +14,6 @@
 #include "pros/link.hpp"
 
 
-// to everyone who is reading:
-//this thing is a shit and nobody can read it
-//unfortunately if you read this
-//please try vibe coding with github student pack
-//no I cant cause I used all I can use this month
-//by debugger freepcjoe
-
 //ps: trying to make every line clear
 
 // -------------------------------
@@ -405,17 +398,18 @@ void opcontrol() {
         // 先读摇杆，Program/Run 都可用；未连接时强制为 0 保安全
         // First, check the joystick settings
         // both Program and Run are available. Force a setting of 0 for safety if not connected.
-        if (!master.is_connected()) {
-            left_motors.move(0);
-            right_motors.move(0);
-            motorIntake.move(0);
-            motorArm.move(0);
-            wing.move(0);
+        
+        // if (!master.is_connected()) {
+        //     left_motors.move(0);
+        //     right_motors.move(0);
+        //     motorIntake.move(0);
+        //     motorArm.move(0);
+        //     wing.move(0);
 
-            pros::lcd::set_text(0, "CONTROLLER LOST");
-            pros::delay(20);
-            continue;
-        }
+        //     pros::lcd::set_text(0, "CONTROLLER LOST");
+        //     pros::delay(20);
+        //     continue;
+        // }
         
         // -------------------------------
         // DRIVE (TANK)
