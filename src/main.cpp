@@ -448,7 +448,7 @@ void opcontrol() {
             actualRPM /= (double)totalMotors;
         }
         drawVelocityGraph(targetVel, actualRPM);
-        right_motors.move(rightPower * 0.8);
+        right_motors.move(rightPower);
 
         // -------------------------------
         // INTAKE
