@@ -90,6 +90,19 @@ double TURN_kD = 0.15;
 // 积分限幅，防止积分饱和
 const double DRIVE_INTEGRAL_CAP = 30.0;
 const double TURN_INTEGRAL_CAP = 15.0;
+const int PID_LOOP_DT_MS = 20;
+
+double clampValue(double value, double minValue, double maxValue) {
+    if (value > maxValue) return maxValue;
+    if (value < minValue) return minValue;
+    return value;
+}
+
+double normalizeDeg(double deg) {
+    while (deg > 180.0) deg -= 360.0;
+    while (deg < -180.0) deg += 360.0;
+    return deg;
+}
 
 // -------------------------------
 // INITIALIZE
@@ -135,6 +148,11 @@ void driveDistance(double inches) {
     forwardOdom.reset_position();
     double prevError = inches;
     double integral = 0.0;
+    int settleCount = 0;
+    int elapsedMs = 0;
+    const int settleNeed = 8;  // 8 * 20ms = 160ms
+    const int timeoutMs = 3000 + (int)(std::fabs(inches) * 45.0);
+    const double headingTarget = imu.get_rotation();
 
     while (true) {
         updateOdometry();
@@ -146,22 +164,27 @@ void driveDistance(double inches) {
         prevError = error;
 
         integral += error;
-        if (integral > DRIVE_INTEGRAL_CAP) integral = DRIVE_INTEGRAL_CAP;
-        else if (integral < -DRIVE_INTEGRAL_CAP) integral = -DRIVE_INTEGRAL_CAP;
+        integral = clampValue(integral, -DRIVE_INTEGRAL_CAP, DRIVE_INTEGRAL_CAP);
 
         double power =
             DRIVE_kP * error + DRIVE_kI * integral + DRIVE_kD * derivative;
-        if (power > 100.0) power = 100.0;
-        else if (power < -100.0) power = -100.0;
+        power = clampValue(power, -100.0, 100.0);
 
-        double headingError = imu.get_rotation();
+        double headingError = headingTarget - imu.get_rotation();
         double turn = headingError * 1.2; // >>> YOU TUNE <<<
+        turn = clampValue(turn, -30.0, 30.0);
 
         left_motors.move(power - turn);
         right_motors.move(power + turn);
 
-        if (fabs(error) < 0.5) break;
-        pros::delay(20);
+        if (std::fabs(error) < 0.5) {
+            settleCount++;
+        } else {
+            settleCount = 0;
+        }
+        if (settleCount >= settleNeed || elapsedMs >= timeoutMs) break;
+        pros::delay(PID_LOOP_DT_MS);
+        elapsedMs += PID_LOOP_DT_MS;
     }
 
     left_motors.move(0);
@@ -173,29 +196,37 @@ void driveDistance(double inches) {
 // TURN TO ANGLE (PID)
 // -------------------------------
 void turnToAngle(double targetDeg) {
-    double prevError = targetDeg;
+    double prevError = normalizeDeg(targetDeg - imu.get_rotation());
     double integral = 0.0;
+    int settleCount = 0;
+    int elapsedMs = 0;
+    const int settleNeed = 7; // 7 * 20ms = 140ms
+    const int timeoutMs = 2800;
 
     while (true) {
         double curr = imu.get_rotation();
-        double error = targetDeg - curr;
+        double error = normalizeDeg(targetDeg - curr);
         double derivative = error - prevError;
         prevError = error;
 
         integral += error;
-        if (integral > TURN_INTEGRAL_CAP) integral = TURN_INTEGRAL_CAP;
-        else if (integral < -TURN_INTEGRAL_CAP) integral = -TURN_INTEGRAL_CAP;
+        integral = clampValue(integral, -TURN_INTEGRAL_CAP, TURN_INTEGRAL_CAP);
 
         double power =
             TURN_kP * error + TURN_kI * integral + TURN_kD * derivative;
-        if (power > 90.0) power = 90.0;
-        else if (power < -90.0) power = -90.0;
+        power = clampValue(power, -90.0, 90.0);
 
         left_motors.move(-power);
         right_motors.move(power);
 
-        if (fabs(error) < 1.0) break;
-        pros::delay(20);
+        if (std::fabs(error) < 1.0) {
+            settleCount++;
+        } else {
+            settleCount = 0;
+        }
+        if (settleCount >= settleNeed || elapsedMs >= timeoutMs) break;
+        pros::delay(PID_LOOP_DT_MS);
+        elapsedMs += PID_LOOP_DT_MS;
     }
 
     left_motors.move(0);
