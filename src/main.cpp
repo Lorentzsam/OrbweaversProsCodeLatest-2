@@ -354,13 +354,10 @@ void turnToAngle(double targetDeg) {
 // AUTONOMOUS
 // -------------------------------
 void autonomous() {
-    driveDistance(24);
-    turnToAngle(90);
-    driveDistance(12);
+    while(true) {
+    pros::lcd::print(0, "Heading: %d", (int)imu.get_rotation());
+    pros::delay(20);
 
-    motorIntake.move(100);
-    pros::delay(500);
-    motorIntake.move(0);
 }
 
 // -------------------------------
