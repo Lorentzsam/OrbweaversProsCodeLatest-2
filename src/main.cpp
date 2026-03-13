@@ -75,7 +75,6 @@ double robotHeadingDeg = 0.0;
 // CONSTANTS
 // -------------------------------
 const double PI = 3.141592653589793;
-//
 
 // >>> YOU TUNE THIS <<<
 const double TRACK_WHEEL_DIAMETER_IN = 2.75;
@@ -83,7 +82,7 @@ const double TRACK_WHEEL_DIAMETER_IN = 2.75;
 const double DIST_PER_DEG =
     (TRACK_WHEEL_DIAMETER_IN * PI) / 360.0;
 
-// PROS Rotation 返回 centidegrees（1/100 度），需转换为度
+// PROS Rotation returns centidegrees (1/100 degree), convert to degrees
 const double CENTIDEG_TO_DEG = 1.0 / 100.0;
 
 // -------------------------------
@@ -92,58 +91,48 @@ const double CENTIDEG_TO_DEG = 1.0 / 100.0;
 
 // >>> YOU TUNE THESE <<<
 double DRIVE_kP = 6.0;
-double DRIVE_kI = 0.0;  
+double DRIVE_kI = 0.0;
 double DRIVE_kD = 0.4;
 
 double TURN_kP = 2.2;
-double TURN_kI = 0.0;  
+double TURN_kI = 0.0;
 double TURN_kD = 0.15;
 
-// 积分限幅，防止积分饱和
+// Integral cap to prevent windup
 const double DRIVE_INTEGRAL_CAP = 30.0;
 const double TURN_INTEGRAL_CAP = 15.0;
 
-// Error 曲线图：V5 屏幕 480x240，水平零线在中心，error 映射为 Y 偏移
+// Screen dimensions
 const int SCREEN_W = 480;
 const int SCREEN_H = 240;
-// const int GRAPH_CENTER_Y = 120;
-const double DRIVE_ERROR_SCALE = 5.0;   // 像素/英寸
-const double TURN_ERROR_SCALE = 2.0;   // 像素/度
+
+const double DRIVE_ERROR_SCALE = 5.0;
+const double TURN_ERROR_SCALE  = 2.0;
 
 // -------------------------------
-// PID 速度曲线可视化 (V5 Brain 屏幕)
 // PID Speed Curve Visualization (V5 Brain Screen)
 // -------------------------------
-const int GRAPH_WIDTH = 400;
-const int GRAPH_HEIGHT = 200;
-const int GRAPH_LEFT = 20;
-const int GRAPH_TOP = 15;
+const int GRAPH_WIDTH    = 400;
+const int GRAPH_HEIGHT   = 200;
+const int GRAPH_LEFT     = 20;
+const int GRAPH_TOP      = 15;
 const int GRAPH_CENTER_Y = GRAPH_TOP + GRAPH_HEIGHT / 2;  // 115
-// 目标速度 -127~127 映射到 ±(GRAPH_HEIGHT/2-5) 像素
-// Target speed -127~127 mapped to ±(GRAPH_HEIGHT/2-5) pixels
-const double TARGET_SCALE = (GRAPH_HEIGHT / 2.0 - 5) / 127.0;
-// 实际速度 RPM 约 ±200 映射到同一范围
-// Actual speed RPM about ±200 mapped to the same range
+
+const double TARGET_SCALE     = (GRAPH_HEIGHT / 2.0 - 5) / 127.0;
 const double ACTUAL_RPM_SCALE = (GRAPH_HEIGHT / 2.0 - 5) / 200.0;
 
 static std::vector<int16_t> targetYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
 static std::vector<int16_t> actualYHistory(GRAPH_WIDTH, GRAPH_CENTER_Y);
 static int graphWriteIndex = 0;
 
-
-//it just tryed to define GRAPH_CENTER_Y twice and I dont know why
-//we still needs someone who know C++
-
-
-// 在 Brain 屏幕上绘制两条速度曲线（红=目标，绿=实际）
-// Draw two speed curves on the screen(red=target, green=actual)
+// -------------------------------
+// DRAW VELOCITY GRAPH
+// Draw two speed curves on the Brain screen (red=target, green=actual)
+// -------------------------------
 void drawVelocityGraph(int targetVel, double actualRPM) {
-    // 将目标速度（手柄 -127~127）转为 Y 坐标，正速度向上
-    // Convert the target velocity (controller -127~127) to the Y coordinate, with positive velocity upwards.
     int targetY = GRAPH_CENTER_Y - (int)(targetVel * TARGET_SCALE);
     int actualY = GRAPH_CENTER_Y - (int)(actualRPM * ACTUAL_RPM_SCALE);
-    // 限幅
-    // Limit amplitude
+
     if (targetY < GRAPH_TOP) targetY = GRAPH_TOP;
     if (targetY > GRAPH_TOP + GRAPH_HEIGHT) targetY = GRAPH_TOP + GRAPH_HEIGHT;
     if (actualY < GRAPH_TOP) actualY = GRAPH_TOP;
@@ -154,44 +143,31 @@ void drawVelocityGraph(int targetVel, double actualRPM) {
 
     int nextIdx = (graphWriteIndex + 1) % GRAPH_WIDTH;
 
-    // 清空绘图区域（黑底）
-    // Clear drawing area (black background)
     pros::screen::set_eraser(pros::Color::black);
     pros::screen::erase_rect(GRAPH_LEFT, GRAPH_TOP,
-                            GRAPH_LEFT + GRAPH_WIDTH,
-                            GRAPH_TOP + GRAPH_HEIGHT);
+                             GRAPH_LEFT + GRAPH_WIDTH,
+                             GRAPH_TOP + GRAPH_HEIGHT);
 
-    // 画中线（灰色）便于读零
-    // Draw center line (gray) for easier zero reading
     pros::screen::set_pen(pros::Color::grey);
     pros::screen::draw_line(GRAPH_LEFT, GRAPH_CENTER_Y,
                             GRAPH_LEFT + GRAPH_WIDTH, GRAPH_CENTER_Y);
 
-    // 红色：目标速度曲线（不连接首尾，避免屏左右边缘的折线）
-    // Red: Target speed curve
-    //(not connecting the beginning and end to avoid broken lines on the left and right edges of the screen)
     pros::screen::set_pen(pros::Color::red);
     for (int i = 0; i < GRAPH_WIDTH - 1; i++) {
-        int j = i + 1;
         pros::screen::draw_line(
-            GRAPH_LEFT + i, targetYHistory[i],
-            GRAPH_LEFT + j, targetYHistory[j]);
+            GRAPH_LEFT + i,     targetYHistory[i],
+            GRAPH_LEFT + i + 1, targetYHistory[i + 1]);
     }
 
-    // 绿色：实际速度曲线（同上）
-    // Green: Actual speed curve (same as above)
     pros::screen::set_pen(pros::Color::green);
     for (int i = 0; i < GRAPH_WIDTH - 1; i++) {
-        int j = i + 1;
         pros::screen::draw_line(
-            GRAPH_LEFT + i, actualYHistory[i],
-            GRAPH_LEFT + j, actualYHistory[j]);
+            GRAPH_LEFT + i,     actualYHistory[i],
+            GRAPH_LEFT + i + 1, actualYHistory[i + 1]);
     }
 
-    // 图例与数值（右侧）
-    // Legend and values ​​(right side)
     pros::screen::set_pen(pros::Color::white);
-    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP, "R:Target");
+    pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP,      "R:Target");
     pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 12, "G:Actual");
     pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 28, "T:%d", targetVel);
     pros::screen::print(pros::E_TEXT_SMALL, GRAPH_LEFT + GRAPH_WIDTH + 8, GRAPH_TOP + 40, "A:%.0f", actualRPM);
@@ -215,9 +191,6 @@ void initialize() {
     robotX = robotY = 0.0;
 
     pros::lcd::set_text(0, "READY");
-    // Brain 大屏：确认显示正常，自动阶段会画 Error 曲线
-    // Brain large screen: Confirms normal display;
-    // error curve will be drawn during automatic phase.
     pros::screen::set_eraser(pros::Color::black);
     pros::screen::erase();
     pros::screen::set_pen(pros::Color::white);
@@ -231,12 +204,12 @@ void updateOdometry() {
     static double prevDeg = 0.0;
 
     double currDeg = forwardOdom.get_position() * CENTIDEG_TO_DEG;
-    double dDeg = currDeg - prevDeg;
-    prevDeg = currDeg;
+    double dDeg    = currDeg - prevDeg;
+    prevDeg        = currDeg;
 
     double dInches = dDeg * DIST_PER_DEG;
 
-    robotHeadingDeg = imu.get_rotation();
+    robotHeadingDeg  = imu.get_rotation();
     double headingRad = robotHeadingDeg * (PI / 180.0);
 
     robotX += dInches * cos(headingRad);
@@ -245,52 +218,47 @@ void updateOdometry() {
 
 // -------------------------------
 // DRIVE STRAIGHT (PID + IMU HOLD)
+// FIX: added imu.tare() so heading correction is relative to start of each move
+// FIX: removed unused prevX, prevY, iter variables
 // -------------------------------
 void driveDistance(double inches) {
     forwardOdom.reset_position();
+    imu.tare();                      // <<< FIX: zero heading at start of each drive
     double prevError = inches;
-    double integral = 0.0;
+    double integral  = 0.0;
 
-    // Error 曲线：清屏（黑底）、画零线（目标），波形收敛即 PID 良好
-    // Error curve: Clear the screen (black background), draw a zero line (target), 
-    // and the waveform converges, indicating a good PID.
     pros::screen::set_eraser(pros::Color::black);
     pros::screen::erase();
     pros::screen::set_pen(pros::Color::gray);
     pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
     pros::screen::set_pen(pros::Color::green);
-    int prevX = -1, prevY = GRAPH_CENTER_Y;
-    int iter = 0;
 
     while (true) {
         updateOdometry();
 
         double traveled =
             forwardOdom.get_position() * CENTIDEG_TO_DEG * DIST_PER_DEG;
-        double error = inches - traveled;
+        double error      = inches - traveled;
         double derivative = error - prevError;
-        prevError = error;
+        prevError         = error;
 
         integral += error;
-        if (integral > DRIVE_INTEGRAL_CAP) integral = DRIVE_INTEGRAL_CAP;
+        if      (integral >  DRIVE_INTEGRAL_CAP) integral =  DRIVE_INTEGRAL_CAP;
         else if (integral < -DRIVE_INTEGRAL_CAP) integral = -DRIVE_INTEGRAL_CAP;
 
         double power =
             DRIVE_kP * error + DRIVE_kI * integral + DRIVE_kD * derivative;
-        if (power > 100.0) power = 100.0;
+        if      (power >  100.0) power =  100.0;
         else if (power < -100.0) power = -100.0;
 
-        double headingError = imu.get_rotation();
-        double turn = headingError * 1.2; // >>> YOU TUNE <<<
+        double headingError = imu.get_rotation();   // now relative to start of this move
+        double turn         = headingError * 1.2;   // >>> YOU TUNE this multiplier
 
         left_motors.move(power - turn);
         right_motors.move(power + turn);
 
-        // 用 3 行 LCD 显示 error 调试（用 %d 避免嵌入式 %f 不显示）
-        // Display error debugging using a 3-line LCD 
-        // (use %d to avoid embedded %f not being displayed)
         pros::lcd::print(0, "Drv E:%d in:%d", (int)error, (int)traveled);
-        pros::lcd::print(1, "Pwr:%d", (int)power);
+        pros::lcd::print(1, "Pwr:%d",          (int)power);
 
         if (fabs(error) < 0.5) break;
         pros::delay(20);
@@ -303,41 +271,36 @@ void driveDistance(double inches) {
 
 // -------------------------------
 // TURN TO ANGLE (PID)
+// FIX: removed unused prevX, prevY, iter variables
 // -------------------------------
 void turnToAngle(double targetDeg) {
     double prevError = targetDeg;
-    double integral = 0.0;
+    double integral  = 0.0;
 
-    // Error 曲线：清屏（黑底）、零线 + 波形
-    // Error curve: Clear screen (black background), zero line + waveform
     pros::screen::set_eraser(pros::Color::black);
     pros::screen::erase();
     pros::screen::set_pen(pros::Color::gray);
     pros::screen::draw_line(0, GRAPH_CENTER_Y, SCREEN_W, GRAPH_CENTER_Y);
     pros::screen::set_pen(pros::Color::blue);
-    int prevX = -1, prevY = GRAPH_CENTER_Y;
-    int iter = 0;
 
     while (true) {
-        double curr = imu.get_rotation();
-        double error = targetDeg - curr;
+        double curr       = imu.get_rotation();
+        double error      = targetDeg - curr;
         double derivative = error - prevError;
-        prevError = error;
+        prevError         = error;
 
         integral += error;
-        if (integral > TURN_INTEGRAL_CAP) integral = TURN_INTEGRAL_CAP;
+        if      (integral >  TURN_INTEGRAL_CAP) integral =  TURN_INTEGRAL_CAP;
         else if (integral < -TURN_INTEGRAL_CAP) integral = -TURN_INTEGRAL_CAP;
 
         double power =
             TURN_kP * error + TURN_kI * integral + TURN_kD * derivative;
-        if (power > 90.0) power = 90.0;
+        if      (power >  90.0) power =  90.0;
         else if (power < -90.0) power = -90.0;
 
         left_motors.move(-power);
         right_motors.move(power);
 
-        // LCD 显示 error 调试（用 %d 避免 %f 不显示）
-        // LCD displays error debugging (use %d to avoid %f not being displayed)
         pros::lcd::print(0, "Turn E:%d deg", (int)error);
         pros::lcd::print(1, "cur:%d Pwr:%d", (int)curr, (int)power);
 
@@ -352,100 +315,98 @@ void turnToAngle(double targetDeg) {
 
 // -------------------------------
 // AUTONOMOUS
+// FIX: sensor check loop added at start — watch LCD for 2 sec before robot moves
+//      Push robot by hand during this window:
+//        - Odom should change when pushed forward/back
+//        - IMU should change when rotated
+//        - Calibrating should read 0 (not 1)
+//      If any sensor stays stuck at 0, that's your problem.
 // -------------------------------
 void autonomous() {
-    while(true) {
-    pros::lcd::print(0, "Heading: %d", (int)imu.get_rotation());
-    pros::delay(20);
 
+    // --- SENSOR CHECK (2 seconds before any movement) ---
+    for (int i = 0; i < 100; i++) {
+        pros::lcd::print(0, "IMU: %d deg",     (int)imu.get_rotation());
+        pros::lcd::print(1, "Odom: %d",        (int)forwardOdom.get_position());
+        pros::lcd::print(2, "Calibrating: %d", (int)imu.is_calibrating());
+        pros::delay(20);
+    }
+    // --- END SENSOR CHECK ---
+
+    // STEP 1: Drive forward
+    driveDistance(12);              // >>> TUNE: change to your actual first distance (inches)
+    pros::delay(200);
+
+    // STEP 2: Intake
+    motorIntake.move(-127);         // intake forward — check direction is correct
+    pros::delay(800);               // >>> TUNE: ms to run intake
+    motorIntake.move(0);
+    pros::delay(200);
+
+    // STEP 3: Turn
+    turnToAngle(90);                // >>> TUNE: positive=right, negative=left
+    pros::delay(200);
+
+    // STEP 4: Drive forward again
+    driveDistance(24);              // >>> TUNE: change to your actual second distance (inches)
+    pros::delay(200);
+
+    // STEP 5: Outtake
+    motorIntake.move(127);          // reverse intake = outtake
+    pros::delay(800);               // >>> TUNE: ms to run outtake
+    motorIntake.move(0);
 }
 
 // -------------------------------
 // OPERATOR CONTROL
-// 键位：左/右摇杆Y=底盘 | R1/R2=收 intake 正/反 | L1=气管切换 | A/B=翼伸出/缩回 | UP=臂自动序列 X=臂上 Y/DOWN=臂下
-// Keypad: Left/Right Joystick Y = Chassis | R1/R2 = Intake Forward/Reverse | L1 = Airway Switch 
-// A/B = Wing Extension/Retraction | UP = Automatic Arm Sequence X = Arm Up Y/DOWN = Arm Down
+// Keypad: Left/Right Joystick Y = Chassis | R1/R2 = Intake Forward/Reverse
+//         L1 = Airway Switch | RIGHT/LEFT = Wing | UP = Arm sequence
+//         X = Arm up | Y/DOWN = Arm down
 // -------------------------------
 void opcontrol() {
-    // Wait a short time (~3 sec) to let controller connect
-    // 最多等约 3 秒再进主循环，避免 Program 模式下 is_connected() 未就绪时卡死
-    // Wait a maximum of about 3 seconds before entering the main loop to avoid freezing in Program mode if is_connected() is not ready.
+    // Wait up to ~3 sec for controller to connect
     for (int wait = 0; wait < 150 && !master.is_connected(); wait++) {
-        pros::delay(20);  // make sure the CPU doesn't freeze
+        pros::delay(20);
     }
 
-    // Main controller wait loop
     while (!master.is_connected()) {
         left_motors.move(0);
         right_motors.move(0);
         motorIntake.move(0);
         motorArm.move(0);
         wing.move(0);
-
         pros::lcd::set_text(0, "WAITING FOR CONTROLLER");
         pros::delay(20);
     }
 
     pros::lcd::set_text(0, "CONTROLLER CONNECTED");
 
-    // Main driver control loop
     while (true) {
 
-        // Safety: if disconnected mid-match
-        // 先读摇杆，Program/Run 都可用；未连接时强制为 0 保安全
-        // First, check the joystick settings
-        // both Program and Run are available. Force a setting of 0 for safety if not connected.
-        
-        // if (!master.is_connected()) {
-        //     left_motors.move(0);
-        //     right_motors.move(0);
-        //     motorIntake.move(0);
-        //     motorArm.move(0);
-        //     wing.move(0);
-
-        //     pros::lcd::set_text(0, "CONTROLLER LOST");
-        //     pros::delay(20);
-        //     continue;
-        // }
-        
         // -------------------------------
         // DRIVE (TANK)
         // -------------------------------
-        int leftPower =
-            master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightPower =
-            master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        int leftPower  = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightPower = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         left_motors.move(-leftPower);
         right_motors.move(rightPower);
 
-        //if (!connected) {
-        //    motorIntake.move(0);
-        //    motorArm.move(0);
-        //    wing.move(0);
-        //}
-        // The comment needed to be fixed because I cannot include pros/link.hpp
-        
-
-
         // -------------------------------
-        // PID 速度曲线：目标 vs 实际（Brain 屏幕）
-        // PID Speed ​​Curve: Target vs. Actual (Brain Screen)
+        // PID Speed Curve: Target vs Actual (Brain Screen)
         // -------------------------------
-        int targetVel = (leftPower + rightPower) / 2;  // 手柄目标（左右摇杆平均）
-        //Controller target (average for both left and right analog sticks)
+        int targetVel = (leftPower + rightPower) / 2;
         double actualRPM = 0;
-        auto leftVel = left_motors.get_actual_velocity_all();
+        auto leftVel  = left_motors.get_actual_velocity_all();
         auto rightVel = right_motors.get_actual_velocity_all();
         size_t totalMotors = leftVel.size() + rightVel.size();
         if (totalMotors > 0) {
-            for (double v : leftVel) actualRPM -= v;   // 左侧电机反向，取负
-            //The left motor reverses direction, taking the negative value.
+            for (double v : leftVel)  actualRPM -= v;  // left motors are reversed
             for (double v : rightVel) actualRPM += v;
             actualRPM /= (double)totalMotors;
         }
         drawVelocityGraph(targetVel, actualRPM);
-        right_motors.move(rightPower);
+        // FIX: removed duplicate right_motors.move(rightPower * 0.8) that was here
 
         // -------------------------------
         // INTAKE
@@ -460,16 +421,13 @@ void opcontrol() {
         // -------------------------------
         // TUBE TOGGLE
         // -------------------------------
-        if (master.get_digital_new_press(
-                pros::E_CONTROLLER_DIGITAL_L1)) {
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
             tubeExtended = !tubeExtended;
         }
         tube_piston.set_value(tubeExtended);
 
         // -------------------------------
-        // WING（A=伸出 B=缩回，与 D-pad 方向键区分）
-        // (A = extend, B = retract, distinguish it from the D-pad arrow keys)
-        // WING
+        // WING (RIGHT = extend, LEFT = retract)
         // -------------------------------
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
             wing.move(127);
@@ -479,16 +437,15 @@ void opcontrol() {
             wing.move(0);
 
         // -------------------------------
-        // ARM AUTO TRIGGER
+        // ARM AUTO TRIGGER (UP button)
         // -------------------------------
-        if (master.get_digital_new_press(
-                pros::E_CONTROLLER_DIGITAL_UP)) {
-            armState = UP;
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+            armState  = UP;
             armCounter = 0;
         }
 
         // -------------------------------
-        // ARM CONTROL
+        // ARM STATE MACHINE
         // -------------------------------
         armCounter++;
 
@@ -496,7 +453,7 @@ void opcontrol() {
             case UP:
                 motorArm.move(-127);
                 if (armCounter > ARM_UP_DURATION) {
-                    armState = KEEP;
+                    armState   = KEEP;
                     armCounter = 0;
                 }
                 break;
@@ -504,7 +461,7 @@ void opcontrol() {
             case KEEP:
                 motorArm.move(-15);
                 if (armCounter > ARM_KEEP_DURATION) {
-                    armState = DOWN;
+                    armState   = DOWN;
                     armCounter = 0;
                 }
                 break;
@@ -512,19 +469,16 @@ void opcontrol() {
             case DOWN:
                 motorArm.move(64);
                 if (armCounter > ARM_DOWN_DURATION) {
-                    armState = IDLE;
+                    armState   = IDLE;
                     armCounter = 0;
                 }
                 break;
 
             case IDLE:
-                if (master.get_digital(
-                        pros::E_CONTROLLER_DIGITAL_X))
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X))
                     motorArm.move(-127);
-                else if (master.get_digital(
-                             pros::E_CONTROLLER_DIGITAL_Y) ||
-                         master.get_digital(
-                             pros::E_CONTROLLER_DIGITAL_DOWN))
+                else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y) ||
+                         master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
                     motorArm.move(64);
                 else
                     motorArm.move(0);
@@ -532,22 +486,11 @@ void opcontrol() {
         }
 
         // -------------------------------
-        // 仅用 3 行 LCD 显示（用 %d 避免嵌入式 %f 不显示）
-        // Display using only 3 lines of LCD (using %d to avoid embedded %f not being displayed)
+        // LCD DISPLAY
         // -------------------------------
-        //pros::lcd::print(0, "H:%d deg in:%d", (int)robotHeadingDeg, (int)traveledIn);
-
-        // WARNING: traveledIn IS NOT DEFINED IN OPCONTROL, THIS LINE WILL CAUSE A COMPILATION ERROR IF UNCOMMENTED
-
-
-        pros::lcd::print(1, "X:%d Y:%d", (int)robotX, (int)robotY);
+        pros::lcd::print(1, "X:%d Y:%d",   (int)robotX, (int)robotY);
         pros::lcd::print(2, "odom deg:%d", (int)(forwardOdom.get_position() * CENTIDEG_TO_DEG));
 
         pros::delay(20);
     }
 }
-
-
-// we still need more data
-// how can this thing possibly work just by vibe coding
-// we are planning to use the collected data to generate a code to replace this
