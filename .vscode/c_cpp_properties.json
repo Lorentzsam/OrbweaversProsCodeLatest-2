@@ -10,7 +10,8 @@
         "/home/freepcjoe/桌面/code/OrbweaversProsCodeLatest-2/include/**",
         "/Users/mohottala/OrbweaversProsCodeLatest-2-1/include",
         "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2/include",
-        "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2-1/include"
+        "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2-1/include",
+        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-3/include"
       ],
       "defines": [
         "_DEBUG",
@@ -23,7 +24,7 @@
       "intelliSenseMode": "gcc-arm",
       "browse": {
         "path": [
-          "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2-1"
+          "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-3"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
