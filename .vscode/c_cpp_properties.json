@@ -11,7 +11,8 @@
         "/Users/mohottala/OrbweaversProsCodeLatest-2-1/include",
         "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2/include",
         "/Users/mohottala/OrbweaversProsCodeLatest-2-1/OrbweaversProsCodeLatest-2-1/include",
-        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-3/include"
+        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-3/include",
+        "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-6/include"
       ],
       "defines": [
         "_DEBUG",
@@ -24,7 +25,7 @@
       "intelliSenseMode": "gcc-arm",
       "browse": {
         "path": [
-          "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-3"
+          "/Users/mohottala/Sam-Orbweavers-Ver/OrbweaversProsCodeLatest-2-6"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
